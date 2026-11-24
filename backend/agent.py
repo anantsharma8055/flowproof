@@ -1,24 +1,31 @@
 """Plain tool-calling loop over any OpenAI-compatible API (Groq by default). Every call is traced; writes go through the approval gate."""
 import json, os
-from openai import AsyncOpenAI
+from openai import APIError, AsyncOpenAI
 from dotenv import load_dotenv
 
 load_dotenv()  # reads ~/flowproof/.env if present
 
-MODEL = os.environ.get("FLOWPROOF_MODEL", "llama-3.3-70b-versatile")
+MODEL = os.environ.get("FLOWPROOF_MODEL", "openai/gpt-oss-120b")
 BASE_URL = os.environ.get("FLOWPROOF_BASE_URL", "https://api.groq.com/openai/v1")
 KEY = os.environ.get("FLOWPROOF_API_KEY") or os.environ.get("GROQ_API_KEY")
 SYSTEM = ("You are an IT operations copilot with tools from several company systems. Use the tools to get facts; never guess. "
+          "Be efficient: fetch a full list once and analyse it yourself rather than calling a tool once per item. "
           "Cite every asset as 'Asset #<id>'. If no tool can answer part of a question, say exactly what is missing. "
           "Actions that change data need human approval: still call the tool when asked, then report if it was held.")
 
 
-async def run_agent(mcp, question: str, approve_writes: bool = False, max_steps: int = 12) -> dict:
-    client = AsyncOpenAI(base_url=BASE_URL, api_key=KEY)
+async def run_agent(mcp, question: str, approve_writes: bool = False, max_steps: int = 16) -> dict:
+    client = AsyncOpenAI(base_url=BASE_URL, api_key=KEY, timeout=60, max_retries=4)
     tools = [{"type": "function", "function": {"name": k, "description": t["description"], "parameters": t["inputSchema"]}} for k, t in mcp.tools.items()]
     msgs, trace = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": question}], []
     for _ in range(max_steps):
-        m = (await client.chat.completions.create(model=MODEL, messages=msgs, tools=tools, temperature=0)).choices[0].message
+        for attempt in range(4):  # gpt-oss sometimes emits a malformed tool name; Groq rejects it, so retry with some randomness
+            try:
+                m = (await client.chat.completions.create(model=MODEL, messages=msgs, tools=tools, temperature=0 if attempt == 0 else 0.4)).choices[0].message
+                break
+            except APIError as e:  # malformed tool call (400), rate limit or network error
+                if attempt == 3 or getattr(e, 'status_code', 0) in (401, 404):
+                    return {"answer": "", "trace": trace, "error": str(e)[:200]}
         msgs.append(m.model_dump(exclude_none=True))
         if not m.tool_calls:
             return {"answer": m.content or "", "trace": trace}

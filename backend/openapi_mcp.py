@@ -36,6 +36,7 @@ async def main(base: str, name: str):
 
     @server.call_tool()
     async def _call(tool: str, args: dict):
+        args = {k: v for k, v in args.items() if v not in (None, "")}  # models often send null for optional filters
         method, path, _ = tools[tool]
         for k, v in list(args.items()):
             if "{%s}" % k in path:

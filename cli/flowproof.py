@@ -24,6 +24,8 @@ async def run_scenarios(mcp, ids, runs, approve):
             results.append({**r, "verdict": evaluate(sc, r)})
         passed = sum(x["verdict"]["passed"] for x in results)
         print(f"{'PASS' if passed == runs else 'FAIL'}  {sc['id']:<24} {passed}/{runs} runs")
+        if results[-1].get("error"):
+            print("      error     ", results[-1]["error"])
         for k, v in results[-1]["verdict"].items():
             if isinstance(v, dict):
                 print(f"      {k:<11}{'ok ' if v['ok'] else 'BAD'} {v['detail']}")
