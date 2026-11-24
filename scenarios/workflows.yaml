@@ -21,7 +21,7 @@
   writes: hold
 - id: warranty-claims
   question: "How many warranty claims has Asset #3 had? Use the warranty history if you can."
-  answer_regex: "(\\b(0|zero|no|none)\\b.{0,40}claim|claim.{0,40}\\b(0|zero|none)\\b)"
+  answer_regex: "(\\b(2|two)\\b.{0,40}claim|claim.{0,40}\\b(2|two)\\b)"
   must_use_servers: [assets]
   expect_tools: [warranty_history]
   depends_on: [warranty_history]
