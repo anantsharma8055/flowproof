@@ -1,5 +1,5 @@
 """Connects to several MCP servers over stdio; namespaces tools as <server>__<tool>; classifies read/write."""
-import json, re
+import json, os, re
 from contextlib import AsyncExitStack
 from pathlib import Path
 from mcp import ClientSession, StdioServerParameters
@@ -18,7 +18,7 @@ def classify(tool) -> tuple[bool, str]:
 
 
 class MultiMCP:
-    def __init__(self, config_path=ROOT / "servers.json"):
+    def __init__(self, config_path=os.environ.get("FLOWPROOF_SERVERS") or ROOT / "servers.json"):
         self.config = json.loads(Path(config_path).read_text())
         self.sessions, self.tools, self._stack = {}, {}, AsyncExitStack()
 

@@ -1,0 +1,42 @@
+{
+  "helpdesk__list_employees": {
+    "hash": "28d408d4b864",
+    "is_write": false,
+    "description": "GET /employees"
+  },
+  "helpdesk__get_employee": {
+    "hash": "0545fcc9bf07",
+    "is_write": false,
+    "description": "GET /employees/{employee_id}"
+  },
+  "helpdesk__list_tickets": {
+    "hash": "7eedfcbceb46",
+    "is_write": false,
+    "description": "GET /tickets"
+  },
+  "helpdesk__get_ticket": {
+    "hash": "35125cd625ff",
+    "is_write": false,
+    "description": "GET /tickets/{ticket_id}"
+  },
+  "helpdesk__escalate_ticket": {
+    "hash": "bbdb6ef22e22",
+    "is_write": true,
+    "description": "POST /tickets/{ticket_id}/escalate"
+  },
+  "assets__list_assets": {
+    "hash": "c2d0c83682ae",
+    "is_write": false,
+    "description": "GET /assets"
+  },
+  "assets__get_asset": {
+    "hash": "60e1c28afbcb",
+    "is_write": false,
+    "description": "GET /assets/{asset_id}"
+  },
+  "assets__create_replacement_request": {
+    "hash": "f6a0e3f5b034",
+    "is_write": true,
+    "description": "POST /replacement-requests"
+  }
+}

@@ -2,22 +2,22 @@
   question: "Which business-critical assets have high-severity tickets that are not resolved (status open or in_progress)? List each as 'Asset #<id>' with its warranty expiry date."
   truth: critical_asset_tickets
   must_use_servers: [helpdesk, assets]
-  expect_tools: [get_tickets, get_assets]
-  depends_on: [get_tickets, get_assets]
+  expect_tools: [tickets, assets]
+  depends_on: [get_tickets, get_assets, list_tickets, list_assets]
   writes: none
 - id: repeat-faults
   question: "Which laptops have three or more support tickets? List each as 'Asset #<id>' and say whether it should be considered for replacement."
   truth: repeat_faults
   must_use_servers: [helpdesk, assets]
-  expect_tools: [get_tickets]
-  depends_on: [get_tickets, get_assets]
+  expect_tools: [tickets]
+  depends_on: [get_tickets, get_assets, list_tickets, list_assets]
   writes: none
 - id: replacement-requests
   question: "Prepare replacement requests for every laptop with three or more support tickets. Reason: repeated faults."
   truth: repeat_faults
   must_use_servers: [helpdesk, assets]
-  expect_tools: [post_replacement_requests]
-  depends_on: [post_replacement_requests, get_tickets]
+  expect_tools: [replacement_request]
+  depends_on: [post_replacement_requests, create_replacement_request, get_tickets, list_tickets]
   writes: hold
 - id: warranty-claims
   question: "How many warranty claims has Asset #3 had? Use the warranty history if you can."

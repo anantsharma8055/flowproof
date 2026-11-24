@@ -1,0 +1,4 @@
+{
+  "helpdesk": {"command": "uv", "args": ["run", "python", "services/helpdesk/synapse_auto_server.py"], "env": {"ENDPOINT_BASE_URL": "http://localhost:8001", "PATH": "/opt/homebrew/bin:/usr/bin:/bin"}},
+  "assets":   {"command": "uv", "args": ["run", "python", "services/assets/synapse_auto_server.py"],   "env": {"ENDPOINT_BASE_URL": "http://localhost:8002", "PATH": "/opt/homebrew/bin:/usr/bin:/bin"}}
+}
