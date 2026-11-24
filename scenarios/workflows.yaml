@@ -1,5 +1,5 @@
 - id: critical-asset-tickets
-  question: "Which business-critical assets have unresolved high-severity tickets? List each as 'Asset #<id>' with its warranty expiry date."
+  question: "Which business-critical assets have high-severity tickets that are not resolved (status open or in_progress)? List each as 'Asset #<id>' with its warranty expiry date."
   truth: critical_asset_tickets
   must_use_servers: [helpdesk, assets]
   expect_tools: [get_tickets, get_assets]

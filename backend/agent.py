@@ -7,6 +7,7 @@ load_dotenv()  # reads ~/flowproof/.env if present
 
 MODEL = os.environ.get("FLOWPROOF_MODEL", "openai/gpt-oss-120b")
 BASE_URL = os.environ.get("FLOWPROOF_BASE_URL", "https://api.groq.com/openai/v1")
+MODELS = [MODEL] + [m for m in os.environ.get("FLOWPROOF_FALLBACKS", "").split(",") if m]  # tried in turn when one is overloaded
 KEY = os.environ.get("FLOWPROOF_API_KEY") or os.environ.get("GROQ_API_KEY")
 SYSTEM = ("You are an IT operations copilot with tools from several company systems. Use the tools to get facts; never guess. "
           "Be efficient: fetch a full list once and analyse it yourself rather than calling a tool once per item. "
@@ -15,16 +16,16 @@ SYSTEM = ("You are an IT operations copilot with tools from several company syst
 
 
 async def run_agent(mcp, question: str, approve_writes: bool = False, max_steps: int = 16) -> dict:
-    client = AsyncOpenAI(base_url=BASE_URL, api_key=KEY, timeout=60, max_retries=4)
+    client = AsyncOpenAI(base_url=BASE_URL, api_key=KEY, timeout=45, max_retries=1)
     tools = [{"type": "function", "function": {"name": k, "description": t["description"], "parameters": t["inputSchema"]}} for k, t in mcp.tools.items()]
     msgs, trace = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": question}], []
     for _ in range(max_steps):
-        for attempt in range(4):  # gpt-oss sometimes emits a malformed tool name; Groq rejects it, so retry with some randomness
+        for attempt in range(2 * len(MODELS) + 2):  # gpt-oss sometimes emits a malformed tool name; Groq rejects it, so retry with some randomness
             try:
-                m = (await client.chat.completions.create(model=MODEL, messages=msgs, tools=tools, temperature=0 if attempt == 0 else 0.4)).choices[0].message
+                m = (await client.chat.completions.create(model=MODELS[attempt % len(MODELS)], messages=msgs, tools=tools, temperature=0 if attempt == 0 else 0.4)).choices[0].message
                 break
             except APIError as e:  # malformed tool call (400), rate limit or network error
-                if attempt == 3 or getattr(e, 'status_code', 0) in (401, 404):
+                if attempt == 2 * len(MODELS) + 1 or getattr(e, 'status_code', 0) in (401, 404):
                     return {"answer": "", "trace": trace, "error": str(e)[:200]}
         msgs.append(m.model_dump(exclude_none=True))
         if not m.tool_calls:
