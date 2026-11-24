@@ -5,8 +5,13 @@ from pathlib import Path
 SNAP = Path(__file__).resolve().parents[1] / "data" / "snapshots"
 
 
+def _h(*parts) -> str:
+    return hashlib.sha256(json.dumps(parts, sort_keys=True).encode()).hexdigest()[:12]
+
+
 def snapshot(tools: dict) -> dict:
-    return {k: {"hash": hashlib.sha256(json.dumps([t["description"], t["inputSchema"], t["is_write"]], sort_keys=True).encode()).hexdigest()[:12],
+    # "shash" covers what an agent can call (schema + read/write); the description alone only ever counts as "reworded"
+    return {k: {"hash": _h(t["description"], t["inputSchema"], t["is_write"]), "shash": _h(t["inputSchema"], t["is_write"]),
                 "is_write": t["is_write"], "description": t["description"]} for k, t in tools.items()}
 
 
@@ -21,7 +26,9 @@ def load(label: str) -> dict:
 
 def diff(old: dict, new: dict) -> dict:
     return {"added": sorted(set(new) - set(old)), "removed": sorted(set(old) - set(new)),
-            "changed": sorted(k for k in set(old) & set(new) if old[k]["hash"] != new[k]["hash"]),
+            # old snapshots without "shash" fall back to the full hash
+            "changed": sorted(k for k in set(old) & set(new) if old[k].get("shash", old[k]["hash"]) != new[k].get("shash", new[k]["hash"])),
+            "reworded": sorted(k for k in set(old) & set(new) if "shash" in old[k] and old[k]["shash"] == new[k]["shash"] and old[k]["hash"] != new[k]["hash"]),
             # a tool that flipped from read to write is a safety regression, reported on its own
             "became_write": sorted(k for k in set(old) & set(new) if not old[k]["is_write"] and new[k]["is_write"])}
 
