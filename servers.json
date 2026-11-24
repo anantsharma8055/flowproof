@@ -1,0 +1,4 @@
+{
+  "helpdesk": {"command": "uv", "args": ["run", "python", "-m", "backend.openapi_mcp", "--base", "http://localhost:8001", "--name", "helpdesk"]},
+  "assets":   {"command": "uv", "args": ["run", "python", "-m", "backend.openapi_mcp", "--base", "http://localhost:8002", "--name", "assets"]}
+}

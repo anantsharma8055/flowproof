@@ -1,0 +1,7 @@
+[project]
+name = "flowproof"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["fastapi", "uvicorn", "mcp>=1.12,<2", "anthropic", "pyyaml", "httpx", "pytest"]
+[tool.pytest.ini_options]
+pythonpath = ["."]
