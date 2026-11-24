@@ -1,0 +1,40 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FlowProof</title>
+<style>
+:root{--bg:#0f1115;--card:#181b22;--fg:#e8eaf0;--mut:#8b93a7;--ok:#3ecf8e;--bad:#ff6b6b;--acc:#7c9cff;--bd:#2a2f3a}
+@media(prefers-color-scheme:light){:root{--bg:#f6f7fa;--card:#fff;--fg:#15181f;--mut:#667085;--bd:#e3e6ed;--acc:#3a5bd9}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif}
+header{padding:18px 24px;border-bottom:1px solid var(--bd);display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+h1{font-size:18px;margin:0}nav button{background:none;border:0;color:var(--mut);font:inherit;padding:6px 10px;cursor:pointer;border-radius:6px}
+nav button.on{color:var(--fg);background:var(--card)}main{max-width:980px;margin:0 auto;padding:24px 16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:16px}
+input,textarea{width:100%;background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:9px;font:inherit}
+button.p{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer;margin-top:8px}
+table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:7px 8px;border-bottom:1px solid var(--bd);font-size:14px}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.mut{color:var(--mut)}code{background:var(--bg);padding:2px 6px;border-radius:5px;font-size:13px;word-break:break-all}
+.pill{border:1px solid var(--bd);border-radius:99px;padding:1px 9px;font-size:12px}
+</style></head><body>
+<header><h1>FlowProof</h1><nav><button data-t="scan" class="on">1 · Scan</button><button data-t="run">2 · Prove</button><button data-t="diff">3 · Change</button></nav></header>
+<main>
+<section id="scan"><div class="card"><label class="mut">API base URL</label><input id="base" value="http://localhost:8002">
+<label class="mut">Workflow the agent must perform</label><textarea id="wf" rows="2">Which business-critical assets are under warranty and need a replacement request?</textarea>
+<button class="p" onclick="doScan()">Scan &amp; recommend</button></div><div id="scanOut"></div></section>
+<section id="run" hidden><div id="scList"></div></section>
+<section id="diff" hidden><div class="card"><p class="mut">Snapshot the current tool contract, change the API, rebuild, then diff.</p>
+<input id="lbl" value="baseline" style="max-width:220px"> <button class="p" onclick="snap()">Save snapshot</button> <button class="p" onclick="doDiff()">Diff vs snapshot</button></div><div id="diffOut"></div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s),j=(u,o)=>fetch(u,o).then(r=>r.json()),esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===b));document.querySelectorAll("main>section").forEach(s=>s.hidden=s.id!==b.dataset.t)});
+async function doScan(){$("#scanOut").innerHTML='<p class="mut">Scanning…</p>';const r=await j(`/api/scan?base=${encodeURIComponent($("#base").value)}&workflow=${encodeURIComponent($("#wf").value)}`);
+$("#scanOut").innerHTML=`<div class="card"><b>${esc(r.title)}</b> · agent-readiness <b>${r.overall}/100</b><table><tr><th>Endpoint</th><th>Score</th><th>Fix</th><th>Use?</th></tr>${r.endpoints.map(e=>`<tr><td><code>${esc(e.route)}</code> ${e.write?'<span class="pill bad">write</span>':''}</td><td>${e.score}</td><td class="mut">${e.missing.join(", ")||"—"}</td><td>${e.relevance?'<span class="ok">yes</span> <span class="mut">'+e.why.join(", ")+'</span>':'<span class="mut">no</span>'}</td></tr>`).join("")}</table></div>
+<div class="card"><b>Build command</b><p><code>${esc(r.command||"No relevant endpoints found for this workflow")}</code></p></div>`}
+async function loadSc(){const s=await j("/api/scenarios");$("#scList").innerHTML=s.map(x=>`<div class="card" id="sc-${x.id}"><b>${x.id}</b> ${x.writes=="hold"?'<span class="pill">write · approval gate</span>':''}<p class="mut">${esc(x.question)}</p><button class="p" onclick="runSc('${x.id}')">Run</button><div class="out"></div></div>`).join("")}
+async function runSc(id){const o=$(`#sc-${id} .out`);o.innerHTML='<p class="mut">Agent running…</p>';const r=await j(`/api/run/${id}`,{method:"POST"});
+const v=r.verdict;o.innerHTML=`<p>${["answer","trajectory","safety"].filter(k=>v[k]).map(k=>`<span class="${v[k].ok?"ok":"bad"}">${v[k].ok?"✓":"✗"} ${k}</span> <span class="mut">${esc(v[k].detail)}</span>`).join("<br>")}</p>
+<table><tr><th>Tool call</th><th>Server</th><th></th></tr>${r.trace.map(t=>`<tr><td><code>${esc(t.tool.split("__")[1])}</code> <span class="mut">${esc(JSON.stringify(t.args))}</span></td><td>${t.server}</td><td>${t.held?'<span class="bad">HELD</span>':t.is_write?'<span class="pill bad">write</span>':""}</td></tr>`).join("")}</table><p>${esc(r.answer)}</p>`}
+async function snap(){await j(`/api/snapshot/${$("#lbl").value}`,{method:"POST"});$("#diffOut").innerHTML='<p class="ok">Snapshot saved.</p>'}
+async function doDiff(){const d=await j(`/api/diff/${$("#lbl").value}`);const L=(t,a,c)=>`<tr><td>${t}</td><td class="${c}">${a.length?a.map(x=>`<code>${esc(x)}</code>`).join(" "):'<span class="mut">none</span>'}</td></tr>`;
+$("#diffOut").innerHTML=`<div class="card"><table>${L("Added",d.added,"ok")}${L("Removed",d.removed,"bad")}${L("Changed",d.changed,"")}${L("Read → write",d.became_write,"bad")}${L("Affected scenarios",d.affected,"")}</table></div>`}
+loadSc();
+</script></body></html>
