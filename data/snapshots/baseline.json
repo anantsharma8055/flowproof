@@ -1,0 +1,42 @@
+{
+  "helpdesk__get_employees": {
+    "hash": "5dd6acb8e001",
+    "is_write": false,
+    "description": "List employees with their department"
+  },
+  "helpdesk__get_employees_by_employee_id": {
+    "hash": "a9a0f0673fd7",
+    "is_write": false,
+    "description": "Get one employee by id"
+  },
+  "helpdesk__get_tickets": {
+    "hash": "e57335b0df61",
+    "is_write": false,
+    "description": "List support tickets, optionally filtered by status, severity or asset id"
+  },
+  "helpdesk__get_tickets_by_ticket_id": {
+    "hash": "fcd884fd7fd3",
+    "is_write": false,
+    "description": "Get one ticket by id"
+  },
+  "helpdesk__post_tickets_by_ticket_id_escalate": {
+    "hash": "524b50f84013",
+    "is_write": true,
+    "description": "Escalate a ticket to critical severity (changes data)"
+  },
+  "assets__get_assets": {
+    "hash": "e3b2d8fc3364",
+    "is_write": false,
+    "description": "List assets, optionally filtered by type or criticality (low, medium, high, business_critical)"
+  },
+  "assets__get_assets_by_asset_id": {
+    "hash": "33e575c64e45",
+    "is_write": false,
+    "description": "Get one asset with owner, criticality and warranty expiry date"
+  },
+  "assets__post_replacement_requests": {
+    "hash": "c1c2a9c1310c",
+    "is_write": true,
+    "description": "Create a replacement request for an asset (changes data)"
+  }
+}
