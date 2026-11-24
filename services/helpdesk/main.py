@@ -42,9 +42,12 @@ def get_employee(employee_id: int):
     return dict(r)
 
 
-@app.get("/tickets", summary="List support tickets, optionally filtered by status, severity or asset id")
+@app.get("/tickets", summary="List support tickets, optionally filtered by status (open, in_progress, resolved, or unresolved for open and in_progress), severity or asset id")
 def list_tickets(status: str | None = None, severity: str | None = None, asset_id: int | None = None):
     q, a = "SELECT * FROM tickets WHERE 1=1", []
+    if status == "unresolved":
+        q += " AND status!='resolved'"
+        status = None
     for col, v in (("status", status), ("severity", severity), ("asset_id", asset_id)):
         if v is not None:
             q += f" AND {col}=?"

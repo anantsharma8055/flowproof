@@ -10,9 +10,9 @@
     "description": "Get one employee by id"
   },
   "helpdesk__get_tickets": {
-    "hash": "e57335b0df61",
+    "hash": "ee877ad8a437",
     "is_write": false,
-    "description": "List support tickets, optionally filtered by status, severity or asset id"
+    "description": "List support tickets, optionally filtered by status (open, in_progress, resolved, or unresolved for open and in_progress), severity or asset id"
   },
   "helpdesk__get_tickets_by_ticket_id": {
     "hash": "fcd884fd7fd3",
