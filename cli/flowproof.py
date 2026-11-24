@@ -37,13 +37,17 @@ async def run_scenarios(mcp, ids, runs, approve):
 
 async def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["tools", "snapshot", "diff", "run", "rerun"])
+    ap.add_argument("cmd", choices=["tools", "lint", "snapshot", "diff", "run", "rerun"])
     ap.add_argument("arg", nargs="*"); ap.add_argument("--runs", type=int, default=1); ap.add_argument("--approve", action="store_true")
     a = ap.parse_args()
     async with MultiMCP() as mcp:
         if a.cmd == "tools":
             for k, t in mcp.tools.items():
                 print(f"{'WRITE' if t['is_write'] else 'read ':<6}{k}  [{t['write_source']}]")
+        elif a.cmd == "lint":
+            bad = contract.lint(mcp.tools)
+            for k, m in bad.items(): print("WARN ", k, "description mentions undeclared:", ", ".join(m))
+            print(f"{len(bad)} of {len(mcp.tools)} tools have undeclared parameters"); sys.exit(1 if bad else 0)
         elif a.cmd == "snapshot":
             contract.save(contract.snapshot(mcp.tools), a.arg[0]); print("saved", a.arg[0])
         elif a.cmd in ("diff", "rerun"):

@@ -23,3 +23,10 @@ def test_diff_detects_added_and_flipped_to_write():
     d = contract.diff({"a__t": mk(False), "a__u": mk(False)}, {"a__t": mk(True, "e"), "a__new": mk(False)})
     assert d == {"added": ["a__new"], "removed": ["a__u"], "changed": ["a__t"], "became_write": ["a__t"]}
     assert contract.affected([{"id": "s", "expect_tools": ["new"]}, {"id": "u", "depends_on": ["u"]}, {"id": "n", "depends_on": ["other"]}], d) == ["s", "u"]
+
+
+def test_lint_flags_described_but_undeclared_params():
+    t = lambda d, p: {"description": d, "inputSchema": {"properties": p}}
+    bad = contract.lint({"h__list": t("List items, optionally filtered by status", {}), "h__ok": t("Get one", {"id": {}}),
+                         "a__mk": t("Create request given asset_id and reason", {"reason": {}})})
+    assert set(bad) == {"h__list", "a__mk"}

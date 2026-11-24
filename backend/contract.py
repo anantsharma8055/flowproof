@@ -32,3 +32,19 @@ def affected(scenarios: list[dict], d: dict) -> list[str]:
     hit = lambda s: any(base(t) in s.get("depends_on", []) for t in d["removed"] + d["changed"]) or \
         any(base(t).endswith(p) for p in s.get("expect_tools", []) for t in d["added"])
     return [s["id"] for s in scenarios if hit(s)]
+
+
+def lint(tools: dict) -> dict:
+    """Tools whose description promises parameters the input schema doesn't declare (an agent can't pass what it can't see).
+    shortcut: regex heuristic (snake_case ids, 'filter'/'optional' on an empty schema), upgrade to checking against the OpenAPI spec."""
+    import re
+    out = {}
+    for k, t in tools.items():
+        props = set(t["inputSchema"].get("properties", {}))
+        said = {w for w in re.findall(r"\b[a-z]+_[a-z_]+\b", t["description"]) if w not in k and w not in {"in_progress", "business_critical"}}
+        missing = sorted(said - props)
+        if not props and re.search(r"\b(filter\w*|optional\w*|by providing|given)\b", t["description"], re.I):
+            missing.append("(schema is empty)")
+        if missing:
+            out[k] = missing
+    return out
