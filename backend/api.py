@@ -46,7 +46,7 @@ async def api_snapshot(label: str):
 async def api_diff(label: str):
     async with MultiMCP() as m:
         d = contract.diff(contract.load(label), contract.snapshot(m.tools))
-        return {**d, "affected": contract.affected(scenarios(), d), "tools": {k: t["is_write"] for k, t in m.tools.items()}}
+        return {**d, "affected": contract.affected(scenarios(), d), "lint": contract.lint(m.tools), "tools": {k: t["is_write"] for k, t in m.tools.items()}}
 
 
 @app.post("/api/run/{sid}")
