@@ -1,0 +1,4 @@
+{
+  "helpdesk": {"command": "npx", "args": ["-y", "@2ndbrainlabs-ai/synapse-mcp"], "env": {"SYNAPSE_SERVER_ID": "4be0aa41-f27b-41bc-b3cb-700633224ee4", "SYNAPSE_API_KEY": "${SYNAPSE_API_KEY}", "ENDPOINT_BASE_URL": "http://localhost:8001"}},
+  "assets":   {"command": "npx", "args": ["-y", "@2ndbrainlabs-ai/synapse-mcp"], "env": {"SYNAPSE_SERVER_ID": "a4ad1484-c6d5-4c3d-b53a-f892c482864b", "SYNAPSE_API_KEY": "${SYNAPSE_API_KEY}", "ENDPOINT_BASE_URL": "http://localhost:8002"}}
+}

@@ -4,9 +4,16 @@ from contextlib import AsyncExitStack
 from pathlib import Path
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+from dotenv import load_dotenv
 
 WRITE_WORDS = re.compile(r"post|put|patch|delete|create|update|escalate|remove|send|submit|approve|cancel", re.I)
 ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(ROOT / ".env")
+
+
+def expand(env):
+    """Replace ${VAR} in server env values from the process environment, so secrets stay out of committed config."""
+    return {k: re.sub(r"\$\{(\w+)\}", lambda m: os.environ.get(m.group(1), ""), v) for k, v in env.items()} if env else None
 
 
 def classify(tool) -> tuple[bool, str]:
@@ -24,7 +31,7 @@ class MultiMCP:
 
     async def __aenter__(self):
         for name, c in self.config.items():
-            params = StdioServerParameters(command=c["command"], args=c.get("args", []), env=c.get("env"), cwd=str(ROOT))
+            params = StdioServerParameters(command=c["command"], args=c.get("args", []), env=expand(c.get("env")), cwd=str(ROOT))
             r, w = await self._stack.enter_async_context(stdio_client(params))
             s = await self._stack.enter_async_context(ClientSession(r, w))
             await s.initialize()
