@@ -1,6 +1,9 @@
 """Plain tool-calling loop over any OpenAI-compatible API (Groq by default). Every call is traced; writes go through the approval gate."""
 import json, os
 from openai import AsyncOpenAI
+from dotenv import load_dotenv
+
+load_dotenv()  # reads ~/flowproof/.env if present
 
 MODEL = os.environ.get("FLOWPROOF_MODEL", "llama-3.3-70b-versatile")
 BASE_URL = os.environ.get("FLOWPROOF_BASE_URL", "https://api.groq.com/openai/v1")
