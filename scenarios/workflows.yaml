@@ -3,14 +3,14 @@
   truth: critical_asset_tickets
   must_use_servers: [helpdesk, assets]
   expect_tools: [tickets, assets]
-  depends_on: [get_tickets, get_assets, list_tickets, list_assets]
+  depends_on: [get_tickets, get_assets, list_tickets, list_assets, list_tickets_by_status, get_assets_by_criticality]
   writes: none
 - id: repeat-faults
   question: "Which laptops have three or more support tickets? List each as 'Asset #<id>' and say whether it should be considered for replacement."
   truth: repeat_faults
   must_use_servers: [helpdesk, assets]
   expect_tools: [tickets]
-  depends_on: [get_tickets, get_assets, list_tickets, list_assets]
+  depends_on: [get_tickets, get_assets, list_tickets, list_assets, list_tickets_by_status, get_assets_by_criticality]
   writes: none
 - id: replacement-requests
   question: "Prepare replacement requests for every laptop with three or more support tickets. Reason: repeated faults."
