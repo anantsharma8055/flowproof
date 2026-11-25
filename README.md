@@ -42,7 +42,7 @@ CLI: `uv run python cli/flowproof.py tools | lint | snapshot <label> | diff <lab
 ## Findings on Synapse 0.1.9
 - Hosted builds put only **path** parameters in tool input schemas. Query parameters (filters, write arguments) are dropped even when
   declared with `Query()`, so agents can't see them. `flowproof lint` flags this; exposing filters as path endpoints
-  (`/tickets/status/{status}`) works around it.
+  (`/tickets/status/{status}`) and path ids for writes (`POST /assets/{id}/replacement-request`) work around it.
 - Smart-names can rename untouched tools between rebuilds, which shows up as removed plus added. Without it, names are stable but every
   description is just the route.
 - Local Auto: tools have no parameters and route-only descriptions; `--discover` writes a second file instead of updating in place.

@@ -20,12 +20,20 @@ Both servers are Synapse hosted-Auto builds of unmodified FastAPI apps. The live
 FlowProof is the layer that proves the generated servers keep working after each rebuild.
 
 ## Results (hosted Synapse, free-tier Gemini model)
-RESULTS_PLACEHOLDER
+Three runs per workflow on the hosted baseline (see data/fallback_run.txt):
+
+| Workflow | Pass rate | Notes |
+|---|---|---|
+| repeat-faults | 3/3 | |
+| replacement-requests | 3/3 | all 4 writes held for approval, none executed |
+| critical-asset-tickets | 1/3 | the free-tier model mis-joins tickets to assets |
+| warranty-claims | n/a | the live-update scenario: passes only after the endpoint is added and rebuilt |
 
 ## Findings for the Synapse team
 - Hosted builds put only **path** parameters in tool input schemas. Query parameters (filters, write arguments) are dropped even when declared
   with FastAPI `Query()`, so agents can't see them. `flowproof lint` detects it. Exposing filters as path endpoints
   (`/tickets/status/{status}`, `/assets/criticality/{level}`) lifted critical-asset-tickets from 0/3 to 1/3; the rest is model reasoning.
+- The same limit hit a write tool: `create_replacement_request` had an empty input schema, so the agent called it without an `asset_id` and the workflow scored 0/3. Moving the asset id into the path (`POST /assets/{asset_id}/replacement-request`) took it to 3/3.
 - Smart-names can rename untouched tools between rebuilds, which a diff reports as removed plus added. Without it, names are stable but
   every description is just the route.
 - Rebuilds can rewrite the descriptions of untouched tools; FlowProof reports these as "reworded", not as contract changes.

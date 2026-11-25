@@ -51,8 +51,8 @@ def get_asset(asset_id: int):
     return dict(r)
 
 
-@app.post("/replacement-requests", summary="Create a replacement request for an asset (changes data)")
-def create_replacement_request(asset_id: int, reason: str):
+@app.post("/assets/{asset_id}/replacement-request", summary="Create a replacement request for this asset (changes data). Reason is optional")
+def create_replacement_request(asset_id: int, reason: str = "Repeated faults"):
     c = db()
     cur = c.execute("INSERT INTO replacement_requests(asset_id, reason) VALUES(?,?)", (asset_id, reason))
     c.commit()

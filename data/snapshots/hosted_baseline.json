@@ -48,15 +48,15 @@
     "description": "Retrieve all assets matching a specific criticality level. Returns a filtered list of asset records."
   },
   "assets__get_asset_by_id": {
-    "hash": "0f7c020e7b1b",
+    "hash": "c8d90347b976",
     "shash": "edb666ab4370",
     "is_write": false,
-    "description": "Retrieve a single asset by its ID. Returns the asset record or raises a 404 error if not found."
+    "description": "Fetch a single asset by its ID. Returns the asset record or raises a 404 error if not found."
   },
   "assets__create_replacement_request": {
-    "hash": "de44e59a5e66",
-    "shash": "b91cb6c563e6",
+    "hash": "4d8ef9332bc0",
+    "shash": "902848dd08d2",
     "is_write": true,
-    "description": "Create a new replacement request for an asset by providing the asset ID and reason. Returns the newly created request ID."
+    "description": "Create a replacement request for an asset with a specified reason (defaults to 'Repeated faults'). Returns the new request ID and confirmation."
   }
 }
