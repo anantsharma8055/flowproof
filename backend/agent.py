@@ -1,5 +1,5 @@
 """Plain tool-calling loop over any OpenAI-compatible API (Groq by default). Every call is traced; writes go through the approval gate."""
-import json, os
+import time, json, os
 from openai import APIError, AsyncOpenAI
 from dotenv import load_dotenv
 
@@ -38,7 +38,9 @@ async def run_agent(mcp, question: str, approve_writes: bool = False, max_steps:
             else:
                 args = json.loads(c.function.arguments or "{}")
                 held = t["is_write"] and not approve_writes  # gate enforced here, not in the prompt
+                t0 = time.perf_counter()
                 out = "HELD: this action needs human approval and was not executed." if held else await mcp.call(c.function.name, args)
-                trace.append({"tool": c.function.name, "server": t["server"], "args": args, "is_write": t["is_write"], "held": held, "result": out[:300]})
+                ms = round((time.perf_counter() - t0) * 1000)
+                trace.append({"tool": c.function.name, "server": t["server"], "args": args, "is_write": t["is_write"], "held": held, "ms": ms, "at": time.time(), "result": out[:300]})
             msgs.append({"role": "tool", "tool_call_id": c.id, "content": out[:6000]})  # cap size: free tiers have tight token limits
     return {"answer": "", "trace": trace, "error": "max_steps reached"}

@@ -6,313 +6,575 @@
 <title>FlowProof</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..600&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  color-scheme:light;
-  --paper:#ece3d0; --sheet:#f6f0e2; --ink:#211b14; --ink2:#5b5144; --rule:#cdbfa5;
-  --rust:#b0421d; --olive:#4c6a2a; --amber:#94650f;
-  --serif:'Newsreader',Georgia,'Times New Roman',serif;
-  --sans:'Schibsted Grotesk',system-ui,-apple-system,sans-serif;
-  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
-  --ease:cubic-bezier(.16,1,.3,1);
+  color-scheme:dark;
+  --bg:#11120f; --side:#171813; --card:#1d1f19; --elev:#24261f; --line:#303229;
+  --acc:#a3c66b; --amb:#e5a34b; --ok:#70b77e; --err:#e16b63; --tx:#f2f1e9; --tx2:#999b90;
+  --acc-bg:rgba(163,198,107,.12); --amb-bg:rgba(229,163,75,.12); --ok-bg:rgba(112,183,126,.12); --err-bg:rgba(225,107,99,.12);
+  --sans:'Inter',system-ui,-apple-system,sans-serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  --ease:cubic-bezier(.2,.7,.2,1);
 }
 *{box-sizing:border-box}
-html{background:var(--paper)}
-body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;mix-blend-mode:multiply;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .13  0 0 0 0 .1  0 0 0 0 .08  0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
-body>*{position:relative;z-index:1}
-:focus-visible{outline:2px solid var(--rust);outline-offset:3px;border-radius:2px}
-::selection{background:var(--rust);color:var(--sheet)}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
+::selection{background:rgba(163,198,107,.35)}
+.ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.sm{width:15px;height:15px}.ic.lg{width:22px;height:22px}
+.mono{font-family:var(--mono);font-size:12.5px}
+.mut{color:var(--tx2)}.ok{color:var(--ok)}.err{color:var(--err)}.amb{color:var(--amb)}.acc{color:var(--acc)}
 
-/* masthead */
-header{max-width:1080px;margin:0 auto;padding:28px 24px 0}
-.mast{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-bottom:14px;border-bottom:4px double var(--ink)}
-.brand{display:flex;align-items:center;gap:12px}
-.brand svg{width:34px;height:34px;flex:none}
-.brand b{font:600 2rem/1 var(--serif);letter-spacing:-.02em}
-.brand span{display:block;font-size:.82rem;color:var(--ink2);margin-top:3px;max-width:30ch;line-height:1.3}
-nav{display:flex;gap:4px}
-nav button{background:none;border:0;border-bottom:2px solid transparent;color:var(--ink2);font:500 1rem/1 var(--sans);padding:10px 14px;cursor:pointer;transition:color .2s,border-color .2s}
-nav button:hover{color:var(--ink)}
-nav button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--rust)}
+.app{display:grid;grid-template-columns:245px 1fr;min-height:100vh}
+aside{background:var(--side);border-right:1px solid var(--line);position:fixed;inset:0 auto 0 0;width:245px;display:flex;flex-direction:column;padding:18px 12px;z-index:30;transition:transform .25s var(--ease)}
+.logo{display:flex;align-items:center;gap:10px;padding:2px 8px 18px}
+.logo svg{width:28px;height:28px}
+.logo b{font-weight:600;letter-spacing:.09em;font-size:13.5px}
+.env{margin-left:auto;font:500 10.5px/1 var(--sans);letter-spacing:.06em;color:var(--amb);background:var(--amb-bg);padding:4px 6px;border-radius:5px}
+.nav-label{font:500 11px/1 var(--sans);letter-spacing:.08em;color:var(--tx2);padding:14px 10px 8px}
+.nav a{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;color:var(--tx2);text-decoration:none;transition:background .15s,color .15s;margin-bottom:2px}
+.nav a:hover{background:rgba(255,255,255,.04);color:var(--tx)}
+.nav a.on{background:var(--acc-bg);color:var(--tx)}
+.nav a.on .ic{color:var(--acc)}
+.nav .count{margin-left:auto;font:500 11px/1 var(--mono);color:var(--tx2)}
+.spacer{flex:1}
+.me{display:flex;align-items:center;gap:10px;padding:12px 10px;border-top:1px solid var(--line);margin-top:10px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--elev);border:1px solid var(--line);display:grid;place-items:center;font-weight:600;font-size:12px;color:var(--acc)}
+.me small{display:block;color:var(--tx2);font-size:12px;line-height:1.2}
+main{grid-column:2;min-width:0}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:22px 32px 0}
+.top h1{font:600 22px/1.2 var(--sans);margin:0;letter-spacing:-.01em}
+.top p{margin:3px 0 0;color:var(--tx2)}
+.top .grow{flex:1;min-width:220px}
+.page{padding:22px 32px 56px;display:grid;gap:20px}
+.top .menu-btn{display:none}
 
-main{max-width:1080px;margin:0 auto;padding:44px 24px 96px}
-section[hidden]{display:none}
-h2{font:500 clamp(2.2rem,5.4vw,3.7rem)/1.02 var(--serif);letter-spacing:-.025em;margin:0 0 14px;text-wrap:balance}
-h2 em{font-style:italic;color:var(--rust);font-weight:500}
-h3{font:600 1.35rem/1.2 var(--serif);margin:0 0 4px;letter-spacing:-.01em}
-.lede{color:var(--ink2);max-width:60ch;margin:0 0 36px;font-size:1.04rem}
-.fine{color:var(--ink2);font-size:.88rem}
-code,.mono{font-family:var(--mono);font-size:.86em}
-code{background:rgba(33,27,20,.07);padding:2px 6px;border-radius:3px;overflow-wrap:anywhere}
-
-/* buttons + fields */
-.btn{font:600 .95rem/1 var(--sans);border:1.5px solid var(--ink);background:var(--ink);color:var(--sheet);padding:12px 18px;border-radius:2px;cursor:pointer;transition:background .2s,color .2s,transform .1s,border-color .2s}
-.btn:hover{background:var(--rust);border-color:var(--rust)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);padding:8px 13px;border-radius:8px;font-weight:500;transition:background .15s,border-color .15s,transform .1s}
+.btn:hover{background:var(--elev);border-color:#41443a}
 .btn:active{transform:translateY(1px)}
-.btn.ghost{background:transparent;color:var(--ink)}
-.btn.ghost:hover{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
-.btn[disabled]{opacity:.5;cursor:progress}
-label{display:block;font:600 .85rem/1 var(--sans);margin:0 0 8px}
-input,textarea{width:100%;background:var(--sheet);color:var(--ink);border:1.5px solid var(--rule);border-radius:2px;padding:12px 14px;font:inherit;transition:border-color .2s}
-input:hover,textarea:hover{border-color:var(--ink2)}
-input:focus,textarea:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgba(176,66,29,.22)}
-textarea{resize:vertical;min-height:84px}
-.form{display:grid;gap:20px;max-width:720px;margin-bottom:44px}
-.row-inline{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
-.row-inline>div{flex:1 1 220px;max-width:320px}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#14170d;font-weight:600}
+.btn.pri:hover{background:#b3d47b;border-color:#b3d47b}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn.danger{color:var(--err)}.btn.danger:hover{background:var(--err-bg);border-color:rgba(225,107,99,.4)}
+.btn[disabled]{opacity:.55;cursor:progress}
+.iconbtn{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--line);background:var(--card);border-radius:8px;position:relative;transition:background .15s}
+.iconbtn:hover{background:var(--elev)}
+.dot{position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--amb)}
+select,input,textarea{background:var(--card);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 11px;font:inherit;transition:border-color .15s}
+select{appearance:none;padding-right:30px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999b90' stroke-width='2.4' stroke-linecap='round'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 10px center;cursor:pointer}
+select:hover,input:hover,textarea:hover{border-color:#41443a}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px rgba(163,198,107,.15)}
+textarea{width:100%;resize:vertical;min-height:84px;line-height:1.5}
+.field{display:grid;gap:6px}.field label{font-size:12.5px;color:var(--tx2)}
+.search{position:relative}.search .ic{position:absolute;left:10px;top:9px;color:var(--tx2)}.search input{padding-left:34px;width:100%}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card)}
+.seg button{background:none;border:0;padding:7px 12px;color:var(--tx2);font-weight:500;transition:background .15s,color .15s}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--elev);color:var(--tx)}
+.badge{display:inline-flex;align-items:center;gap:6px;font:500 12px/1 var(--sans);padding:5px 8px;border-radius:6px;white-space:nowrap}
+.badge i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge.ok{background:var(--ok-bg);color:var(--ok)}.badge.err{background:var(--err-bg);color:var(--err)}.badge.amb{background:var(--amb-bg);color:var(--amb)}.badge.acc{background:var(--acc-bg);color:var(--acc)}.badge.mu{background:rgba(255,255,255,.06);color:var(--tx2)}
+.method{font:500 11px/1 var(--mono);padding:4px 6px;border-radius:5px;background:rgba(255,255,255,.06);color:var(--tx2)}
+.method.POST{background:var(--amb-bg);color:var(--amb)}.method.GET{background:var(--ok-bg);color:var(--ok)}
 
-/* ledger */
-.ledger{border-top:2px solid var(--ink)}
-.entry{border-bottom:1px solid var(--rule);padding:26px 0}
-.entry-grid{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:28px 40px;align-items:center}
-.entry .id{font:500 .78rem/1 var(--mono);color:var(--ink2);margin-bottom:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.entry p.q{margin:0;font:400 1.18rem/1.4 var(--serif);max-width:44ch}
-.tag{font:600 .7rem/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--amber);border:1.2px solid var(--amber);padding:4px 7px 3px;border-radius:2px}
-.seals{display:flex;gap:18px}
-.seal{display:grid;justify-items:center;gap:7px;color:var(--rule);--r:0deg}
-.seal i{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;border:1.6px solid currentColor;box-shadow:inset 0 0 0 3.5px var(--paper),inset 0 0 0 4.7px currentColor;transform:rotate(var(--r))}
-.seal i svg{width:22px;height:22px}
-.seal.pass{color:var(--olive)}.seal.fail{color:var(--rust)}
-.seal.none i{border-style:dashed;box-shadow:none}
-.seal span{font:600 .7rem/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
-.seal small{font:500 .72rem/1 var(--mono);color:var(--ink2);margin-top:-2px}
-.stamp .seal i{animation:stamp .55s var(--ease) backwards;animation-delay:calc(var(--n,0)*90ms)}
-@keyframes stamp{0%{opacity:0;transform:rotate(var(--r)) scale(1.55)}55%{opacity:1;transform:rotate(var(--r)) scale(.93)}100%{opacity:1;transform:rotate(var(--r)) scale(1)}}
-.result{display:grid;justify-items:end;gap:10px;min-width:118px}
-.frac{font:500 2.5rem/1 var(--serif);letter-spacing:-.03em}
-.frac small{font-size:1rem;color:var(--ink2);letter-spacing:0}
-.frac.pass{color:var(--olive)}.frac.fail{color:var(--rust)}.frac.none{color:var(--rule)}
-.pips{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:130px}
-.pips b{width:11px;height:11px;border-radius:2px;background:var(--rule)}
-.pips b.p{background:var(--olive)}.pips b.f{background:var(--rust)}
-.when{font-size:.78rem;color:var(--ink2)}
-.progress{height:2px;margin-top:22px;background:var(--rule);overflow:hidden;position:relative}
-.progress::after{content:"";position:absolute;inset:0;background:var(--rust);animation:breathe 1.2s ease-in-out infinite alternate}
-@keyframes breathe{from{opacity:.15}to{opacity:.9}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.card h3{margin:0;font:600 14.5px/1.3 var(--sans)}
+.card .sub{color:var(--tx2);font-size:13px;margin-top:2px}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.grid{display:grid;gap:16px}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g-main{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+.kpi{display:block;text-align:left;width:100%;transition:border-color .15s,background .15s,transform .15s var(--ease)}
+.kpi:hover{border-color:#4a4d40;background:#202219;transform:translateY(-1px)}
+.kpi .top-row{display:flex;justify-content:space-between;align-items:center;color:var(--tx2);font-size:13px}
+.kpi .v{font:600 26px/1.1 var(--sans);letter-spacing:-.02em;margin:12px 0 8px}
+.kpi .s{display:flex;align-items:center;gap:6px;color:var(--tx2);font-size:13px;flex-wrap:wrap}
+.ico{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:var(--elev);color:var(--acc);flex:none}
+.trend{font-weight:500}
 
-/* run detail */
-.detail{margin-top:26px;background:var(--sheet);border:1px solid var(--rule);padding:24px 26px;display:grid;gap:20px}
-.checks{display:grid;gap:8px}
-.checks div{display:grid;grid-template-columns:auto 96px 1fr;gap:12px;align-items:baseline;font-size:.95rem}
-.checks .ok{color:var(--olive);font-weight:600}.checks .no{color:var(--rust);font-weight:600}
-table{width:100%;border-collapse:collapse}
-th{font:600 .78rem/1 var(--sans);text-align:left;color:var(--ink2);padding:0 12px 10px 0;letter-spacing:.04em;text-transform:uppercase}
-td{padding:11px 12px 11px 0;border-top:1px solid var(--rule);vertical-align:top;font-size:.93rem}
-td.num{white-space:nowrap}
-.answer{margin:0;padding:0 0 0 18px;border-left:1px solid var(--ink);font:400 1.08rem/1.5 var(--serif);white-space:pre-wrap;max-width:68ch}
-.held{color:var(--amber);font-weight:600}.wr{color:var(--rust);font-weight:600}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font:500 12px/1 var(--sans);color:var(--tx2);text-align:left;padding:0 12px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr{transition:background .12s}
+.tbl tbody tr.click{cursor:pointer}.tbl tbody tr.click:hover{background:rgba(255,255,255,.03)}
+.tbl tr.sel{background:var(--acc-bg)}
+.scroll{overflow-x:auto}
+.name{font-weight:500}.sm2{font-size:12.5px;color:var(--tx2)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.filters .search{flex:1;min-width:200px;max-width:340px}
 
-/* scan */
-.meter{display:flex;align-items:center;gap:10px;min-width:150px}
-.meter i{flex:1;height:6px;background:var(--rule);border-radius:1px;position:relative;overflow:hidden}
-.meter i b{position:absolute;inset:0 auto 0 0;display:block}
-.yes{color:var(--olive);font-weight:600}.no2{color:var(--ink2)}
-.slip{background:var(--ink);color:var(--sheet);padding:22px 24px;margin-top:32px;position:relative}
-.slip h3{color:var(--sheet);margin-bottom:12px}
-.slip pre{margin:0;white-space:pre-wrap;word-break:break-all;font:400 .9rem/1.6 var(--mono);color:#e9dfc6;padding-right:90px}
-.slip .btn{position:absolute;right:18px;top:18px;padding:9px 13px;background:transparent;border-color:#e9dfc6;color:#e9dfc6;font-size:.85rem}
-.slip .btn:hover{background:var(--rust);border-color:var(--rust);color:var(--sheet)}
+.srv .head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.srv .stats{display:flex;gap:28px;margin:16px 0;flex-wrap:wrap}
+.srv .stats div small{display:block;color:var(--tx2);font-size:12px}
+.srv .stats div b{font-weight:600;font-size:15px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.expand{border-top:1px solid var(--line);margin-top:16px;padding-top:16px;display:grid;gap:16px}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:8px 16px;margin:0}.kv dt{color:var(--tx2)}.kv dd{margin:0;word-break:break-all}
+.toolrow{border:1px solid var(--line);border-radius:9px;margin-bottom:8px;background:var(--bg)}
+.toolrow summary{list-style:none;display:flex;gap:10px;align-items:center;padding:10px 12px;cursor:pointer}
+.toolrow summary::-webkit-details-marker{display:none}
+.toolrow[open] summary{border-bottom:1px solid var(--line)}
+.toolrow .body{padding:12px;display:grid;gap:10px}
+.disc{opacity:.7}
 
-/* change */
-.diffrow{display:grid;grid-template-columns:40px 190px 1fr;gap:12px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--rule)}
-.diffrow .g{font:500 1.5rem/1 var(--serif)}
-.diffrow .l{font-weight:600}
+.json{background:#0c0d0a;border:1px solid var(--line);border-radius:9px;padding:14px 16px;font:12.5px/1.65 var(--mono);overflow:auto;max-height:340px;white-space:pre;margin:0;color:#cfd1c4}
+.json .k{color:var(--acc)}.json .s{color:#e0c58a}.json .n{color:var(--amb)}.json .b{color:#f08f86}
+.term-h{display:flex;gap:6px;align-items:center;padding:9px 12px;background:#15160f;border:1px solid var(--line);border-bottom:0;border-radius:9px 9px 0 0}
+.term-h i{width:9px;height:9px;border-radius:50%;background:#3a3d31}.term-h span{margin-left:8px;font:12px var(--mono);color:var(--tx2)}
+.term-h+.json{border-radius:0 0 9px 9px}
+
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:40;animation:fade .2s}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(520px,100vw);background:var(--side);border-left:1px solid var(--line);z-index:41;display:flex;flex-direction:column;animation:slide .28s var(--ease)}
+.drawer .dh{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 22px;border-bottom:1px solid var(--line)}
+.drawer .db{padding:20px 22px;overflow:auto;display:grid;gap:18px;align-content:start}
+.drawer h2{margin:0;font:600 17px/1.3 var(--mono)}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));background:var(--side);border:1px solid var(--line);border-radius:14px;z-index:41;padding:24px;display:grid;gap:16px;animation:pop .22s var(--ease);max-height:90vh;overflow:auto}
+.modal h2{margin:0;font:600 17px/1.3 var(--sans)}
+@keyframes fade{from{opacity:0}}@keyframes slide{from{transform:translateX(24px);opacity:0}}@keyframes pop{from{opacity:0;transform:translate(-50%,-48%) scale(.97)}}
+.toasts{position:fixed;right:20px;bottom:20px;display:grid;gap:10px;z-index:60}
+.toast{background:var(--elev);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;min-width:260px;max-width:380px;animation:slide .3s var(--ease);box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.toast.ok .ic{color:var(--ok)}.toast.err .ic{color:var(--err)}.toast.info .ic{color:var(--acc)}
+.pop{position:absolute;right:0;top:44px;width:340px;background:var(--elev);border:1px solid var(--line);border-radius:12px;z-index:35;animation:pop2 .18s var(--ease);box-shadow:0 12px 32px rgba(0,0,0,.4);overflow:hidden}
+@keyframes pop2{from{opacity:0;transform:translateY(-4px)}}
+.pop .it{display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}.pop .it:last-child{border:0}
+.rel{position:relative}
+
+.feed{display:grid}
+.feed .it{display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.feed .it:last-child{border:0}
+.feed .ico{width:30px;height:30px}
+.feed .ico.ok{background:var(--ok-bg);color:var(--ok)}.feed .ico.err{background:var(--err-bg);color:var(--err)}.feed .ico.amb{background:var(--amb-bg);color:var(--amb)}.feed .ico.acc{background:var(--acc-bg);color:var(--acc)}
+
+.chart{position:relative}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart text{fill:var(--tx2);font:11px var(--sans)}
+.tip{position:absolute;pointer-events:none;background:var(--elev);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity .12s;z-index:5}
+.legend{display:flex;gap:16px;color:var(--tx2);font-size:12.5px}.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px}
+.bar-row{display:grid;grid-template-columns:150px 1fr 56px;gap:12px;align-items:center;padding:7px 0}
+.bar-row .track{height:8px;background:var(--elev);border-radius:5px;overflow:hidden}.bar-row .track b{display:block;height:100%;border-radius:5px;transition:width .5s var(--ease)}
+
+.sk{background:linear-gradient(90deg,var(--card),var(--elev),var(--card));background-size:200% 100%;animation:sh 1.3s linear infinite;border-radius:10px;min-height:18px}
+@keyframes sh{to{background-position:-200% 0}}
+.empty{display:grid;justify-items:center;text-align:center;gap:10px;padding:44px 20px;color:var(--tx2)}
+.empty .ico{width:44px;height:44px;border-radius:12px}
+.empty b{color:var(--tx);font-weight:600}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--acc);border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+.studio{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+.canvas{position:relative;border:1px solid var(--line);border-radius:12px;background-color:var(--card);background-image:radial-gradient(#2c2e25 1px,transparent 1px);background-size:20px 20px;padding:34px 28px;overflow:auto;min-height:230px}
+.flow{display:flex;align-items:center;gap:0;min-width:max-content}
+.node{width:176px;background:var(--elev);border:1px solid var(--line);border-radius:11px;padding:12px;text-align:left;transition:border-color .15s,transform .15s var(--ease);position:relative;flex:none}
+button.node:hover{border-color:#4a4d40;transform:translateY(-2px)}
+.node.sel{border-color:var(--acc);box-shadow:0 0 0 3px rgba(163,198,107,.14)}
+.node .nt{display:flex;align-items:center;gap:8px;margin-bottom:8px}.node .nt .ico{width:24px;height:24px;border-radius:6px}
+.node .nn{font:500 13px/1.25 var(--mono);word-break:break-all}
+.node .ns{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;color:var(--tx2)}
+.conn{width:34px;height:2px;background:var(--line);flex:none;position:relative}
+.conn::after{content:"";position:absolute;right:-1px;top:-3px;border-left:6px solid var(--line);border-top:4px solid transparent;border-bottom:4px solid transparent}
+.conn.live{background:var(--acc)}.conn.live::after{border-left-color:var(--acc)}
+.st{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--tx2)}
+.st.run{background:var(--amb);animation:pulse 1s infinite}.st.ok{background:var(--ok)}.st.err{background:var(--err)}.st.hold{background:var(--amb)}
+@keyframes pulse{50%{opacity:.35}}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
-.chips code{background:transparent;border:1px solid var(--rule)}
-.g.add{color:var(--olive)}.g.rem,.g.wr{color:var(--rust)}.g.chg{color:var(--amber)}.g.nil{color:var(--rule)}
-.finding{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;padding:16px 0;border-bottom:1px solid var(--rule);align-items:baseline}
-.finding .m{color:var(--rust)}.finding code{justify-self:start}
-.clean{display:flex;align-items:center;gap:16px;padding:22px 0;color:var(--olive);font:500 1.15rem/1.3 var(--serif)}
-.gap-top{margin-top:48px}
-.msg{padding:18px 0;color:var(--ink2)}
-.err{color:var(--rust);font-weight:600}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 10px;font-size:13px;display:inline-flex;align-items:center;gap:7px;transition:border-color .15s,background .15s}
+.chip.on{border-color:rgba(163,198,107,.55);background:var(--acc-bg)}
+.report{display:grid;gap:12px}
+.vrow{display:grid;grid-template-columns:20px 110px 1fr;gap:10px;align-items:baseline;font-size:13.5px}
 
-@media (max-width:760px){
-  header{padding:20px 16px 0}main{padding:32px 16px 72px}
-  .mast{align-items:flex-start}
-  nav{width:100%;overflow-x:auto}
-  .entry-grid{grid-template-columns:1fr;gap:20px}
-  .result{justify-items:start;grid-template-columns:auto 1fr;align-items:center;gap:6px 16px}
-  .result .btn{grid-column:1/-1;justify-self:start}
-  .pips{justify-content:flex-start}
-  .seals{gap:12px}
-  .detail{padding:18px 16px}
-  .checks div{grid-template-columns:auto 1fr}.checks div span:last-child{grid-column:1/-1}
-  .diffrow{grid-template-columns:28px 1fr}.diffrow .chips{grid-column:2}
-  .finding{grid-template-columns:1fr;gap:6px}
-  table.stack thead{display:none}
-  table.stack tr{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:12px 0;border-top:1px solid var(--rule)}
-  table.stack td{border:0;padding:0}
-  table.stack td:first-child{grid-column:1/-1}
-  .slip pre{padding-right:0;margin-top:34px}
+.trace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;align-items:start}
+.tl{display:grid;gap:0}
+.step{display:grid;grid-template-columns:30px 1fr;gap:14px;text-align:left;background:none;border:0;padding:0;width:100%}
+.step .rail{display:grid;justify-items:center;grid-template-rows:auto 1fr}
+.step .rail b{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--elev);border:1px solid var(--line)}
+.step .rail b.ok{color:var(--ok);background:var(--ok-bg);border-color:rgba(112,183,126,.35)}.step .rail b.err{color:var(--err);background:var(--err-bg);border-color:rgba(225,107,99,.35)}.step .rail b.hold{color:var(--amb);background:var(--amb-bg);border-color:rgba(229,163,75,.35)}
+.step .rail u{width:2px;flex:1;background:var(--line);min-height:14px;margin:3px 0}
+.step .sb{border:1px solid transparent;border-radius:10px;padding:10px 12px;margin-bottom:8px;transition:background .15s,border-color .15s}
+.step:hover .sb{background:rgba(255,255,255,.03)}.step.sel .sb{background:var(--elev);border-color:var(--line)}
+
+.crumb{display:flex;align-items:center;gap:8px;color:var(--tx2);font-size:13px}.crumb a{color:var(--tx2);text-decoration:none}.crumb a:hover{color:var(--tx)}
+a.lnk{color:var(--acc);text-decoration:none}a.lnk:hover{text-decoration:underline}
+.diffrow.added td:first-child{box-shadow:inset 2px 0 var(--ok)}.diffrow.removed td:first-child{box-shadow:inset 2px 0 var(--err)}.diffrow.changed td:first-child{box-shadow:inset 2px 0 var(--amb)}
+.stat-line{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}.stat-line:last-child{border:0}
+
+@media (max-width:1180px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g-main,.studio,.trace{grid-template-columns:1fr}}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}aside{transform:translateX(-100%)}aside.open{transform:none}main{grid-column:1}
+  .top .menu-btn{display:grid}.top,.page{padding-left:16px;padding-right:16px}
+  .g2{grid-template-columns:1fr}.kv{grid-template-columns:1fr}
 }
+@media (max-width:560px){.g4{grid-template-columns:1fr}.bar-row{grid-template-columns:100px 1fr 48px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<header>
-  <div class="mast">
-    <div class="brand">
-      <svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h14l7 7V30.5H7z"/><path d="M21 3.5v7h7"/><path d="M12 19.5l3.6 3.6L23 15.5" stroke="#b0421d"/></svg>
-      <div><b>FlowProof</b><span>Can an agent finish the job? We check, and keep checking.</span></div>
+<div class="app">
+  <aside id="side">
+    <div class="logo">
+      <svg viewBox="0 0 28 28" fill="none" stroke="#a3c66b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="7" r="2.6"/><circle cx="6" cy="21" r="2.6"/><circle cx="22" cy="14" r="2.6"/><path d="M8.3 8.4l11.2 4.2M8.3 19.6l11.2-4.2"/><path d="M12 14.2l2.2 2.2 4-4.6" stroke="#e5a34b"/></svg>
+      <b>FLOWPROOF</b><span class="env">DEV</span>
     </div>
-    <nav role="tablist" aria-label="Sections">
-      <button role="tab" data-t="scan" aria-selected="false">Scan</button>
-      <button role="tab" data-t="run" aria-selected="true">Prove</button>
-      <button role="tab" data-t="diff" aria-selected="false">Change</button>
-    </nav>
-  </div>
-</header>
-
-<main>
-  <section id="run">
-    <h2 id="headline">Loading the verification record&hellip;</h2>
-    <p class="lede" id="sub">A workflow counts as verified when the agent's answer matches the database, it used the right tools across both systems, and no write went through without approval.</p>
-    <div class="ledger" id="scList" aria-live="polite"></div>
-  </section>
-
-  <section id="scan" hidden>
-    <h2>Which endpoints are <em>worth exposing</em> to an agent?</h2>
-    <p class="lede">Point FlowProof at an API and describe the workflow. It scores every endpoint for agent-readiness and writes the Synapse build command for the ones that matter.</p>
-    <div class="form">
-      <div><label for="base">API base URL</label><input id="base" value="http://localhost:8002"></div>
-      <div><label for="wf">Workflow the agent must perform</label><textarea id="wf" rows="2">Which business-critical assets are under warranty and need a replacement request?</textarea></div>
-      <div><button class="btn" id="scanBtn">Scan and recommend</button></div>
-    </div>
-    <div id="scanOut" aria-live="polite"></div>
-  </section>
-
-  <section id="diff" hidden>
-    <h2>What did the rebuild <em>change</em> for the agent?</h2>
-    <p class="lede">Save a snapshot of the tool contract, change the API, rebuild with <code>synapse build --discover</code>, then diff. Only scenarios touched by a real change need to run again.</p>
-    <div class="form">
-      <div class="row-inline">
-        <div><label for="lbl">Snapshot label</label><input id="lbl" value="baseline"></div>
-        <button class="btn ghost" id="snapBtn">Save snapshot</button>
-        <button class="btn" id="diffBtn">Diff against snapshot</button>
-      </div>
-    </div>
-    <div id="diffOut" aria-live="polite"></div>
-  </section>
-</main>
+    <div class="nav" id="nav"></div>
+    <div class="spacer"></div>
+    <div class="nav" id="nav2"></div>
+    <div class="me"><div class="avatar">AS</div><div><div style="font-weight:500">Anant Sharma</div><small>IT Operations</small></div></div>
+  </aside>
+  <main><div id="view"></div></main>
+</div>
+<div id="layer"></div>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
 
 <script>
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const IC={
+grid:'<rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/>',
+server:'<rect x="3" y="4" width="18" height="6.5" rx="2"/><rect x="3" y="13.5" width="18" height="6.5" rx="2"/><path d="M7 7.25h.01M7 16.75h.01"/>',
+tool:'<path d="M14.7 6.3a4 4 0 0 0-5 5L4 17l3 3 5.7-5.7a4 4 0 0 0 5-5l-2.4 2.4-2.6-.6-.6-2.6z"/>',
+flow:'<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="12" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8.2 7.2l7.6 3.6M8.2 16.8l7.6-3.6"/>',
+flask:'<path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/><path d="M7.5 15h9"/>',
+chart:'<path d="M4 20V4M4 20h16"/><path d="M8 15l4-4 3 3 5-6"/>',
+diff:'<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M6 8.5v5a3 3 0 0 0 3 3h6.5M13 13.5l2.5 2.5-2.5 2.5"/>',
+book:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',
+gear:'<circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/>',
+bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/>',
+search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',play:'<path d="M7 4.5v15l12-7.5z"/>',check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',
+chev:'<path d="M9 6l6 6-6 6"/>',chevd:'<path d="M6 9l6 6 6-6"/>',
+refresh:'<path d="M20 11a8 8 0 0 0-14.5-4M4 4v4h4M4 13a8 8 0 0 0 14.5 4M20 20v-4h-4"/>',
+power:'<path d="M12 3v9M6.3 6.8a8 8 0 1 0 11.4 0"/>',
+copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+alert:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+save:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',
+bolt:'<path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/>',menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',pulse:'<path d="M3 12h4l2.5-6 4 12 2.5-6H21"/>',
+hold:'<rect x="6" y="11" width="12" height="9" rx="2"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/>',
+};
+const ic=(n,c="")=>`<svg class="ic ${c}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]||""}</svg>`;
+
+const S={servers:[],runs:[],scen:[],cfg:{},diff:null,snap:"",loaded:false,
+  range:"all",srvOpen:{},disc:{},tool:"",tf:{q:"",server:"",method:"",perm:"",status:""},rf:{q:"",status:"",range:"all"},
+  wf:null,wfNodeSel:null,wfServers:null,wfRun:null,cmp:"all",an:{range:"all",wf:"",server:""},notifOpen:false,trace:{id:null,step:0},
+  drafts:[],prompts:{}};
+try{S.drafts=JSON.parse(localStorage.getItem("fp_drafts")||"[]");S.prompts=JSON.parse(localStorage.getItem("fp_prompts")||"{}")}catch{}
+const save=()=>{try{localStorage.setItem("fp_drafts",JSON.stringify(S.drafts));localStorage.setItem("fp_prompts",JSON.stringify(S.prompts))}catch{}};
 async function j(u,o){const r=await fetch(u,o);if(!r.ok)throw new Error(r.status+" "+r.statusText);return r.json()}
-const fail=(e,what)=>`<p class="msg err">${esc(what)}: ${esc(e.message||e)}. Is the service running?</p>`;
 
-const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-const CROSS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>';
-const DASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 12h8"/></svg>';
+const now=()=>Math.floor(Date.now()/1000);
+function ago(t){const d=now()-t;if(d<60)return"just now";if(d<3600)return Math.floor(d/60)+"m ago";if(d<86400)return Math.floor(d/3600)+"h ago";return Math.floor(d/86400)+"d ago"}
+const when=t=>new Date(t*1000).toLocaleString([],{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+const fmtMs=ms=>ms==null?"-":ms>=1000?(ms/1000).toFixed(1)+"s":ms+"ms";
+const pct=(a,b)=>b?Math.round(1000*a/b)/10:0;
+function toast(msg,kind="ok"){const el=document.createElement("div");el.className="toast "+kind;el.innerHTML=`${ic(kind==="err"?"alert":kind==="info"?"bolt":"check")}<div>${esc(msg)}</div>`;$("#toasts").append(el);setTimeout(()=>{el.style.opacity=0;el.style.transition="opacity .3s";setTimeout(()=>el.remove(),300)},4200)}
+function jsonView(v){let s;try{s=JSON.stringify(typeof v==="string"?JSON.parse(v):v,null,2)}catch{return esc(typeof v==="string"?v:JSON.stringify(v))}
+  return esc(s).replace(/(&quot;(?:[^&\\]|\\.|&(?!quot;))*&quot;)(\s*:)?|\b(true|false|null)\b|(-?\d+\.?\d*)/g,(m,str,colon,bool,num)=>str?(colon?`<span class="k">${str}</span>${colon}`:`<span class="s">${str}</span>`):bool?`<span class="b">${m}</span>`:`<span class="n">${m}</span>`)}
+const md=t=>esc(t).replace(/^#{1,4}\s*(.+)$/gm,'<b>$1</b>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>').replace(/^\s*[*-]\s+/gm,'• ');
+const term=(title,v)=>`<div><div class="term-h"><i></i><i></i><i></i><span>${esc(title)}</span></div><pre class="json">${jsonView(v)}</pre></div>`;
+const callOk=t=>!(String(t.result||"").startsWith("ERROR")||/"error"\s*:/.test(String(t.result||"")));
+const stOf=t=>t.held?"hold":callOk(t)?"ok":"err";
+const badge=(k,txt)=>`<span class="badge ${k}"><i></i>${esc(txt)}</span>`;
+const allTools=()=>S.servers.flatMap(s=>s.tools.map(t=>({...t,server:s.name})));
+const rangeSecs={"24h":86400,"7d":604800,"30d":2592000,all:1e12};
+const inRange=(at,r)=>now()-at<=rangeSecs[r];
+const baseName=t=>String(t).split("__").pop();
+function lastUse(server,tool){const r=S.runs.find(r=>r.trace.some(t=>t.server===server&&baseName(t.tool)===tool));return r?r.at:null}
+const wfList=()=>[...S.scen.map(s=>({id:s.id,name:s.id,prompt:S.prompts[s.id]??s.question,status:"Published",scen:true,servers:s.must_use_servers?.length?s.must_use_servers:S.servers.map(x=>x.name),writes:s.writes})),
+  ...S.drafts.map(d=>({...d,status:"Draft",scen:false}))];
+const latestTraceFor=id=>S.runs.find(r=>r.scenario===id);
 
-/* tabs */
-function show(t){
-  $$("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===t));
-  $$("main>section").forEach(s=>s.hidden=s.id!==t);
-}
-$$("nav button").forEach(b=>b.onclick=()=>show(b.dataset.t));
+function batches(range="all",wf=""){
+  const m=new Map();S.runs.filter(r=>inRange(r.at,range)&&(!wf||r.scenario===wf)).forEach(r=>{const b=m.get(r.at)||{at:r.at,p:0,f:0};r.passed?b.p++:b.f++;m.set(r.at,b)});
+  return [...m.values()].sort((a,b)=>a.at-b.at)}
+function callStats(range="all",wf="",server=""){
+  const o={};S.runs.filter(r=>inRange(r.at,range)&&(!wf||r.scenario===wf)).forEach(r=>r.trace.forEach(t=>{if(server&&t.server!==server)return;const k=baseName(t.tool);const x=o[k]=o[k]||{n:0,ok:0,ms:[],server:t.server};x.n++;if(callOk(t))x.ok++;if(t.ms!=null)x.ms.push(t.ms)}));return o}
+function srvStats(name){let n=0,ok=0;S.runs.forEach(r=>r.trace.forEach(t=>{if(t.server===name){n++;if(callOk(t))ok++}}));return{n,ok,rate:n?pct(ok,n):null}}
+function activity(){
+  const a=[];
+  S.servers.forEach(s=>a.push({at:s.checked_at,k:"ok",i:"server",t:`${s.name} MCP server connected`,d:`${s.tools.length} tools exposed · ${s.ping_ms}ms round trip`}));
+  S.runs.slice(0,40).forEach(r=>a.push({at:r.at,k:r.passed?"ok":"err",i:r.passed?"check":"alert",t:r.passed?`Workflow ${r.scenario} completed`:`Regression test failed: ${r.scenario}`,d:r.passed?`${r.trace.length} tool calls`:Object.entries(r.verdict||{}).filter(([k,v])=>v&&v.ok===false).map(([k,v])=>k+": "+v.detail).join(" · ").slice(0,110)}));
+  if(S.diff){S.diff.added.forEach(t=>a.push({at:S.diff._at,k:"acc",i:"plus",t:`New API endpoint discovered: ${baseName(t)}`,d:`since snapshot ${S.snap}`}));
+    S.diff.changed.forEach(t=>a.push({at:S.diff._at,k:"amb",i:"diff",t:`Tool schema changed: ${baseName(t)}`,d:`since snapshot ${S.snap}`}))}
+  return a.sort((x,y)=>y.at-x.at)}
+function latestBoard(){const m={};[...S.runs].reverse().forEach(r=>{m[r.scenario]=r});return Object.values(m)}
+function issues(){const crit=latestBoard().filter(r=>!r.passed&&S.scen.some(s=>s.id===r.scenario)).length;const warn=S.diff?Object.keys(S.diff.lint).length:0;return{crit,warn}}
 
-/* ---------- Prove: scoreboard ledger ---------- */
-const ROT=[-4,3,-2,4,-3,2];
-const NAMES=[["answer","Answer"],["trajectory","Tools"],["safety","Safety"]];
-function seal(label,state,count,n,i){
-  const cls=state==="pass"?"pass":state==="fail"?"fail":"none";
-  const icon=state==="pass"?CHECK:state==="fail"?CROSS:DASH;
-  return `<div class="seal ${cls}" style="--r:${ROT[(i+n)%ROT.length]}deg;--n:${n}"><i>${icon}</i><span>${label}</span><small>${count||"&nbsp;"}</small></div>`;
-}
-function ledgerRow(r,idx){
-  const run=r.run, ok=run&&run.passed===run.runs;
-  const seals=NAMES.map(([k,l],n)=>{
-    if(!run)return seal(l,"none","",n,idx);
-    const c=run.checks[k];
-    return seal(l,c===run.runs?"pass":"fail",run.runs>1?`${c}/${run.runs}`:"",n,idx);
-  }).join("");
-  const frac=run?`<div class="frac ${ok?"pass":"fail"}">${run.passed}<small>/${run.runs}</small></div>
-    <div class="pips" aria-hidden="true">${Array.from({length:run.runs},(_,i)=>`<b class="${i<run.passed?"p":"f"}"></b>`).join("")}</div>
-    <div class="when">${new Date(run.at*1000).toLocaleString([], {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div>`
-    :`<div class="frac none">&ndash;</div><div class="when">Not run yet</div>`;
-  return `<article class="entry stamp" id="sc-${r.id}">
-    <div class="entry-grid">
-      <div><div class="id">${esc(r.id)} ${r.writes==="hold"?'<span class="tag">Write held for approval</span>':""}</div><p class="q">${esc(r.question)}</p></div>
-      <div class="seals">${seals}</div>
-      <div class="result">${frac}<button class="btn ghost" data-run="${esc(r.id)}">${run?"Run again":"Run it"}</button></div>
-    </div>
-    <div class="out"></div>
-  </article>`;
-}
-function headline(rows){
-  const ran=rows.filter(r=>r.run), good=rows.filter(r=>r.run&&r.run.passed===r.run.runs).length;
-  $("#headline").innerHTML=ran.length?`<em>${good} of ${rows.length}</em> workflows verified.`:`No workflows <em>verified</em> yet.`;
-}
-let ROWS=[];
-async function loadBoard(){
+const CH={};
+function lineChart(id,labels,series,{h=220,fmt=v=>v,max}={}){
+  const W=640,H=h,L=40,R=12,T=12,B=26,n=labels.length;
+  if(!n)return`<div class="empty"><div class="ico">${ic("chart")}</div><div><b>No data in this range</b></div></div>`;
+  const top=max||Math.max(1,...series.flatMap(s=>s.v));const x=i=>n===1?(L+W-R)/2:L+i*(W-L-R)/(n-1),y=v=>T+(H-T-B)*(1-v/top);
+  const grid=[0,.25,.5,.75,1].map(g=>`<line x1="${L}" x2="${W-R}" y1="${y(top*g)}" y2="${y(top*g)}" stroke="#2a2c24"/><text x="${L-8}" y="${y(top*g)+4}" text-anchor="end">${fmt(Math.round(top*g*10)/10)}</text>`).join("");
+  const step=Math.ceil(n/6);const xl=labels.map((l,i)=>i%step===0?`<text x="${x(i)}" y="${H-6}" text-anchor="middle">${esc(l)}</text>`:"").join("");
+  const lines=series.map(s=>`<path d="${s.v.map((v,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1)).join(" ")}" fill="none" stroke="${s.c}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${s.v.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="#1d1f19" stroke="${s.c}" stroke-width="1.8"/>`).join("")}`).join("");
+  CH[id]={labels,series,x:[...Array(n)].map((_,i)=>x(i)),W,fmt};
+  return`<div class="chart" id="${id}"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Line chart">${grid}${xl}<line class="guide" y1="${T}" y2="${H-B}" stroke="#4a4d40" stroke-dasharray="3 3" opacity="0"/>${lines}</svg><div class="tip"></div></div>`}
+document.addEventListener("mousemove",e=>{const c=e.target.closest&&e.target.closest(".chart");if(!c||!CH[c.id])return;const d=CH[c.id],svg=c.querySelector("svg"),r=svg.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*d.W;let bi=0;d.x.forEach((v,i)=>{if(Math.abs(v-px)<Math.abs(d.x[bi]-px))bi=i});
+  const g=c.querySelector(".guide");g.setAttribute("x1",d.x[bi]);g.setAttribute("x2",d.x[bi]);g.setAttribute("opacity",1);
+  const tip=c.querySelector(".tip");tip.innerHTML=`<div class="mut" style="margin-bottom:4px">${esc(d.labels[bi])}</div>`+d.series.map(s=>`<div><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.c};margin-right:7px"></i>${esc(s.n)}: <b>${d.fmt(s.v[bi])}</b></div>`).join("");
+  tip.style.opacity=1;const left=d.x[bi]/d.W*r.width;tip.style.left=Math.max(0,Math.min(left+12,r.width-tip.offsetWidth-4))+"px";tip.style.top="8px"});
+document.addEventListener("mouseout",e=>{const c=e.target.closest&&e.target.closest(".chart");if(c&&!c.contains(e.relatedTarget)){c.querySelector(".tip").style.opacity=0;c.querySelector(".guide").setAttribute("opacity",0)}});
+const bars=(rows,color="var(--acc)",fmt=v=>v)=>rows.length?rows.map(r=>`<div class="bar-row"><span class="mono" title="${esc(r.l)}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.l)}</span><div class="track"><b style="width:${r.p}%;background:${r.c||color}"></b></div><span class="mono mut" style="text-align:right">${fmt(r.v)}</span></div>`).join(""):`<div class="empty"><div class="ico">${ic("chart")}</div><div><b>No data yet</b></div></div>`;
+
+const NAV=[["overview","Overview","grid"],["servers","MCP Servers","server"],["tools","Tool Registry","tool"],["studio","Workflow Studio","flow"],["runs","Test Runs","flask"],["analytics","Analytics","chart"],["changes","Change Detection","diff"]];
+function route(){const h=location.hash.replace(/^#\//,"")||"overview";const [p,...rest]=h.split("/");return p==="runs"&&rest.length?{page:"trace",id:decodeURIComponent(rest.join("/"))}:{page:p}}
+function renderNav(){const r=route().page==="trace"?"runs":route().page;
+  $("#nav").innerHTML=`<div class="nav-label">MAIN</div>`+NAV.map(([k,l,i])=>`<a href="#/${k}" class="${r===k?"on":""}">${ic(i)}<span>${l}</span>${k==="servers"&&S.loaded?`<span class="count">${S.servers.length}</span>`:k==="runs"&&S.loaded?`<span class="count">${S.runs.length}</span>`:""}</a>`).join("");
+  $("#nav2").innerHTML=`<div class="nav-label">BOTTOM</div><a href="https://github.com/anantsharma8055/flowproof#readme" target="_blank" rel="noopener">${ic("book")}<span>Documentation</span></a><a href="#/settings" class="${r==="settings"?"on":""}">${ic("gear")}<span>Settings</span></a>`}
+function header(title,sub,extra=""){
+  return`<div class="top"><button class="iconbtn menu-btn" data-act="menu" aria-label="Open menu">${ic("menu")}</button><div class="grow"><h1>${title}</h1><p>${sub}</p></div>${extra}</div>`}
+function topControls(){
+  const ev=activity().slice(0,6);
+  return`<select aria-label="Project"><option>IT Operations</option></select><select aria-label="Environment"><option>Development</option><option disabled>Staging (not configured)</option></select>
+  <select aria-label="Date range" data-act="range">${[["all","All time"],["24h","Last 24 hours"],["7d","Last 7 days"],["30d","Last 30 days"]].map(([v,l])=>`<option value="${v}" ${S.range===v?"selected":""}>${l}</option>`).join("")}</select>
+  <div class="rel"><button class="iconbtn" data-act="notif" aria-label="Notifications">${ic("bell")}${ev.length?'<span class="dot"></span>':""}</button>${S.notifOpen?`<div class="pop"><div style="padding:12px 14px;border-bottom:1px solid var(--line);font-weight:600">Notifications</div>${ev.map(a=>`<div class="it"><span class="ico" style="width:28px;height:28px;color:var(--${a.k==="err"?"err":a.k==="amb"?"amb":a.k==="acc"?"acc":"ok"})">${ic(a.i,"sm")}</span><div><div style="font-size:13px">${esc(a.t)}</div><div class="sm2">${ago(a.at)}</div></div></div>`).join("")||'<div class="empty">All caught up</div>'}</div>`:""}</div>
+  <button class="btn pri" data-act="newwf">${ic("plus","sm")} New Workflow</button>`}
+
+function skeleton(){return`<div class="page"><div class="grid g4">${[1,2,3,4].map(()=>'<div class="sk" style="height:112px"></div>').join("")}</div><div class="sk" style="height:200px"></div><div class="sk" style="height:300px"></div></div>`}
+
+function vOverview(){
+  const rr=S.runs.filter(r=>inRange(r.at,S.range)), pass=rr.filter(r=>r.passed).length, rate=pct(pass,rr.length);
+  const half=Math.floor(rr.length/2), recent=rr.slice(0,half), older=rr.slice(half), tr=recent.length&&older.length?pct(recent.filter(r=>r.passed).length,recent.length)-pct(older.filter(r=>r.passed).length,older.length):0;
+  const is=issues(), wfs=wfList(), online=S.servers.filter(s=>!S.disc[s.name]).length;
+  const kpi=(href,ico,label,val,sub)=>`<a class="card kpi" href="#/${href}" style="text-decoration:none;color:inherit"><div class="top-row"><span>${label}</span><span class="ico">${ic(ico)}</span></div><div class="v">${val}</div><div class="s">${sub}</div></a>`;
+  const b=batches(S.range);
+  return header("Overview","Monitor your AI workflows and MCP infrastructure.",topControls())+`<div class="page">
+  <div class="grid g4">
+    ${kpi("servers","server","MCP Servers",`${online} / ${S.servers.length}`,online===S.servers.length?badge("ok","All connected"):badge("amb",`${S.servers.length-online} disconnected`))}
+    ${kpi("studio","flow","Total Workflows",wfs.length,`<span>${wfs.filter(w=>w.status==="Published").length} published and ${S.drafts.length} drafts</span>`)}
+    ${kpi("runs","pulse","Workflow Success Rate",rr.length?rate+"%":"-",rr.length?`<span class="trend ${tr>=0?"ok":"err"}">${tr>=0?"▲":"▼"} ${Math.abs(Math.round(tr))} pts</span><span>vs earlier · ${rr.length} runs</span>`:"No runs in range")}
+    ${kpi("changes","alert","Issues Detected",is.crit+is.warn,`<span>${is.crit} critical, ${is.warn} warning</span>`)}
+  </div>
+  <div><div class="card-h" style="margin-bottom:10px"><h3>MCP infrastructure</h3><a class="lnk" href="#/servers">Manage servers</a></div>
+    <div class="grid g2">${S.servers.map(s=>srvCard(s)).join("")}</div></div>
+  <div class="grid g-main">
+    <div class="card"><div class="card-h"><div><h3>Workflow performance</h3><div class="sub">Passed and failed runs, grouped by test batch</div></div><div class="legend"><span><i style="background:var(--ok)"></i>Passed</span><span><i style="background:var(--err)"></i>Failed</span></div></div>
+      ${lineChart("c-over",b.map(x=>when(x.at)),[{n:"Passed",c:"#70b77e",v:b.map(x=>x.p)},{n:"Failed",c:"#e16b63",v:b.map(x=>x.f)}])}</div>
+    <div class="card"><div class="card-h"><h3>Recent executions</h3><a class="lnk" href="#/runs">All runs</a></div>
+      ${S.runs.slice(0,6).map(r=>`<a href="#/runs/${encodeURIComponent(r.id)}" style="display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:10px 0;border-bottom:1px solid var(--line);text-decoration:none;color:inherit"><span class="name">${esc(r.scenario)}</span>${badge(r.passed?"ok":"err",r.passed?"Passed":"Failed")}<span class="sm2">${ago(r.at)} · ${fmtMs(r.ms)}</span><span class="sm2" style="text-align:right">${r.trace.length} tools</span></a>`).join("")||`<div class="empty"><div class="ico">${ic("flask")}</div><div><b>No executions yet</b></div></div>`}</div>
+  </div>
+  <div class="card"><div class="card-h"><h3>Recent activity</h3></div><div class="feed">${activity().slice(0,8).map(a=>`<div class="it"><span class="ico ${a.k}">${ic(a.i,"sm")}</span><div><div>${esc(a.t)}</div><div class="sm2">${esc(a.d)}</div></div><span class="sm2">${ago(a.at)}</span></div>`).join("")}</div></div>
+  </div>`}
+
+function srvCard(s,full=false){
+  const off=S.disc[s.name], st=srvStats(s.name), open=S.srvOpen[s.name];
+  const w=s.tools.filter(t=>t.write).length;
+  const lastCall=S.runs.flatMap(r=>r.trace.map(t=>({...t,at:t.at||r.at}))).filter(t=>t.server===s.name&&callOk(t)).sort((a,b)=>b.at-a.at)[0];
+  return`<div class="card srv ${off?"disc":""}"><div class="head"><span class="ico">${ic("server")}</span><div><h3>${esc(s.name)} MCP</h3><div class="sm2 mono">${esc(s.url)}</div></div><span style="margin-left:auto">${off?badge("err","Disconnected"):badge("ok","Connected")}</span></div>
+  <div class="stats"><div><small>Tools</small><b>${s.tools.length}</b></div><div><small>Latency (live ping)</small><b>${off?"-":s.ping_ms+"ms"}</b></div><div><small>Call success</small><b>${st.rate==null?"-":st.rate+"%"}</b></div><div><small>Last checked</small><b>${ago(s.checked_at)}</b></div></div>
+  <div class="actions"><button class="btn sm" data-act="viewtools" data-s="${esc(s.name)}">${ic("tool","sm")} View Tools</button><button class="btn sm" data-act="health" data-s="${esc(s.name)}">${ic("pulse","sm")} Health Check</button>
+  ${full?`<button class="btn sm" data-act="toggle" data-s="${esc(s.name)}">${ic(open?"chevd":"chev","sm")} ${open?"Hide":"Show"} details</button><button class="btn sm" data-act="refresh">${ic("refresh","sm")} Refresh</button>${off?`<button class="btn sm pri" data-act="reconnect" data-s="${esc(s.name)}">${ic("power","sm")} Reconnect</button>`:`<button class="btn sm danger" data-act="disconnect" data-s="${esc(s.name)}">${ic("power","sm")} Disconnect</button>`}`:""}</div>
+  ${full&&open?`<div class="expand"><dl class="kv"><dt>Server URL</dt><dd class="mono">${esc(s.url)}</dd><dt>Connection status</dt><dd>${off?"Disconnected (this session)":"Connected over MCP stdio"}</dd><dt>Permissions</dt><dd>${s.tools.length-w} read · ${w} write (write tools are held for approval)</dd><dt>Last sync</dt><dd>${when(s.checked_at)}</dd><dt>Last successful request</dt><dd>${lastCall?`<span class="mono">${esc(baseName(lastCall.tool))}</span> · ${ago(lastCall.at)}`:"None recorded"}</dd></dl>
+  <div><h3 style="margin-bottom:10px">Available tools</h3>${s.tools.map(t=>`<details class="toolrow"><summary><span class="method ${t.method}">${t.method}</span><span class="mono">${esc(t.name)}</span><span class="sm2" style="margin-left:auto">${t.write?"Write":"Read"}</span></summary><div class="body"><div class="mut">${esc(t.description)}</div><div class="sm2">Input schema</div>${term("input_schema.json",t.schema)}</div></details>`).join("")}</div></div>`:""}
+  </div>`}
+
+function vServers(){
+  return header("MCP Servers","Synapse-generated servers your agents can call.",`<button class="btn" data-act="refresh">${ic("refresh","sm")} Refresh all</button><button class="btn pri" data-act="connect">${ic("plus","sm")} Connect New Server</button>`)+`<div class="page">
+  ${S.servers.length?S.servers.map(s=>srvCard(s,true)).join(""):`<div class="card"><div class="empty"><div class="ico">${ic("server")}</div><div><b>No MCP servers connected</b></div><div>Build one with Synapse, add it to servers.json, then refresh.</div><button class="btn pri" data-act="connect">${ic("plus","sm")} Connect New Server</button></div></div>`}</div>`}
+
+function filteredTools(){const f=S.tf;return allTools().filter(t=>(!f.q||(t.name+t.description+t.endpoint).toLowerCase().includes(f.q.toLowerCase()))&&(!f.server||t.server===f.server)&&(!f.method||t.method===f.method)&&(!f.perm||(f.perm==="write")===t.write)&&(f.status!=="deprecated"))}
+function toolsTable(){const ts=filteredTools();
+  if(!ts.length)return`<div class="empty"><div class="ico">${ic("search")}</div><div><b>${S.tf.status==="deprecated"?"No deprecated tools":"No tools match these filters"}</b></div><button class="btn sm" data-act="clearf">Clear filters</button></div>`;
+  return`<div class="scroll"><table class="tbl"><thead><tr><th>Tool</th><th>Server</th><th>Method</th><th>Endpoint</th><th>Permission</th><th>Last used</th><th>Status</th></tr></thead><tbody>${ts.map(t=>`<tr class="click ${S.tool===t.id?"sel":""}" data-act="tool" data-id="${esc(t.id)}"><td><div class="name mono">${esc(t.name)}</div><div class="sm2" style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.description)}</div></td><td>${esc(t.server)}</td><td><span class="method ${t.method}">${t.method}</span></td><td class="mono mut">${esc(t.endpoint||"-")}</td><td>${t.write?badge("amb","Write"):badge("mu","Read")}</td><td class="mut">${(()=>{const u=lastUse(t.server,t.name);return u?ago(u):"Never"})()}</td><td>${badge("ok","Active")}</td></tr>`).join("")}</tbody></table></div>`}
+function vTools(){const f=S.tf,sel=(k,opts,l)=>`<select data-f="${k}" aria-label="${l}"><option value="">${l}</option>${opts.map(([v,t])=>`<option value="${v}" ${f[k]===v?"selected":""}>${t}</option>`).join("")}</select>`;
+  return header("Tool Registry","Every tool your agents can discover, with its real schema.",`<button class="btn" data-act="refresh">${ic("refresh","sm")} Refresh</button>`)+`<div class="page"><div class="card"><div class="filters" style="margin-bottom:14px"><div class="search">${ic("search","sm")}<input id="tq" placeholder="Search tools, descriptions, endpoints" value="${esc(f.q)}" aria-label="Search tools"></div>
+  ${sel("server",S.servers.map(s=>[s.name,s.name]),"All servers")}${sel("method",[["GET","GET"],["POST","POST"]],"All methods")}${sel("perm",[["read","Read"],["write","Write"]],"Read / Write")}${sel("status",[["active","Active"],["deprecated","Deprecated"]],"Active / Deprecated")}</div>
+  <div id="toolsTable">${toolsTable()}</div></div></div>`}
+function toolDrawer(){const t=allTools().find(x=>x.id===S.tool);if(!t)return"";
+  const hist=S.runs.flatMap(r=>r.trace.filter(c=>c.server===t.server&&baseName(c.tool)===t.name).map(c=>({...c,at:c.at||r.at,rid:r.id}))).slice(0,12);
+  return`<div class="scrim" data-act="closed"></div><div class="drawer" role="dialog" aria-label="Tool details"><div class="dh"><div><h2>${esc(t.name)}</h2><div class="sm2" style="margin-top:6px;display:flex;gap:8px;align-items:center"><span class="method ${t.method}">${t.method}</span><span class="mono">${esc(t.endpoint||"-")}</span></div></div><button class="iconbtn" data-act="closed" aria-label="Close">${ic("x")}</button></div>
+  <div class="db"><div class="mut">${esc(t.description)}</div><div class="chips">${badge("mu",t.server)}${t.write?badge("amb","Write · approval required"):badge("mu","Read")}${badge("ok","Active")}</div>
+  <div><div class="sm2" style="margin-bottom:8px">Input schema</div>${term("input_schema.json",t.schema)}</div>
+  <div><div class="sm2" style="margin-bottom:8px">Execution history</div>${hist.length?`<table class="tbl"><thead><tr><th>When</th><th>Arguments</th><th>Latency</th><th></th></tr></thead><tbody>${hist.map(h=>`<tr class="click" data-nav="#/runs/${encodeURIComponent(h.rid)}"><td class="mut">${ago(h.at)}</td><td class="mono" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(JSON.stringify(h.args))}</td><td class="mono">${fmtMs(h.ms)}</td><td>${badge(stOf(h)==="ok"?"ok":stOf(h)==="hold"?"amb":"err",stOf(h)==="ok"?"OK":stOf(h)==="hold"?"Held":"Error")}</td></tr>`).join("")}</tbody></table>`:`<div class="empty" style="padding:24px"><div>This tool hasn't been called yet.</div></div>`}</div></div></div>`}
+
+function plannedSteps(w){
+  const r=latestTraceFor(w.id); const tr=r?(r.trace||[]):[];
+  const steps=[];tr.forEach(t=>{if(t.server==="?")return;const k=t.server+"/"+baseName(t.tool);const last=steps[steps.length-1];if(!last||last.k!==k)steps.push({k,tool:baseName(t.tool),server:t.server,write:t.is_write,args:t.args,held:t.held,calls:1,ms:t.ms,ok:callOk(t)});else last.calls++});
+  if(!steps.length&&w.scen){const sc=S.scen.find(s=>s.id===w.id);(sc?.expect_tools||[]).forEach(e=>{const t=allTools().find(x=>x.name.includes(e));if(t)steps.push({k:t.server+"/"+t.name,tool:t.name,server:t.server,write:t.write,args:{},calls:0})})}
+  return steps}
+function vStudio(){
+  const wfs=wfList(); if(!S.wf||!wfs.find(w=>w.id===S.wf))S.wf=wfs[0]?.id; const w=wfs.find(x=>x.id===S.wf);
+  if(!w)return header("Workflow Studio","Design and test agent workflows.",`<button class="btn pri" data-act="newwf">${ic("plus","sm")} New Workflow</button>`)+`<div class="page"><div class="card"><div class="empty"><div class="ico">${ic("flow")}</div><div><b>No workflows yet</b></div><button class="btn pri" data-act="newwf">Create one</button></div></div></div>`;
+  const steps=plannedSteps(w), run=S.wfRun&&S.wfRun.id===w.id?S.wfRun:null, sel=S.wfNodeSel;
+  const sts=i=>run?(run.status[i]||"idle"):"idle";
+  const cls=s=>({idle:"",run:"run",ok:"ok",err:"err",hold:"hold"}[s]||"");
+  const node=(i,t)=>`<button class="node ${sel===i?"sel":""}" data-act="node" data-i="${i}"><div class="nt"><span class="ico">${ic(t.write?"hold":"tool","sm")}</span><span class="sm2">${t.write?"Write step":"Tool step"}</span></div><div class="nn">${esc(t.tool)}</div><div class="sm2" style="margin-top:4px">${esc(t.server)} MCP</div><div class="ns"><span><span class="st ${cls(sts(i))}"></span> ${({idle:"Not run",run:"Running",ok:"Success",err:"Failed",hold:"Held"})[sts(i)]||"Not run"}</span><span title="Configuration">${ic("gear","sm")}</span></div></button>`;
+  const fixed=(label,ico,state)=>`<div class="node" style="width:130px"><div class="nt"><span class="ico">${ic(ico,"sm")}</span><span class="sm2">${label}</span></div><div class="ns" style="margin-top:6px"><span><span class="st ${state}"></span> ${state==="ok"?"Done":state==="run"?"Running":state==="err"?"Failed":"Ready"}</span></div></div>`;
+  const endS=run&&run.final?(run.final.passed===false?"err":"ok"):run&&run.running?"run":"";
+  const flow=[fixed("Start","play",run&&run.started?"ok":""),...steps.map((s,i)=>node(i,s)),fixed("Validate response","check",endS)];
+  const html=flow.map((n,i)=>(i?`<div class="conn ${run&&(i===1||sts(i-2)==="ok"||sts(i-2)==="hold")?"live":""}"></div>`:"")+n).join("");
+  const selStep=sel!=null?steps[sel]:null, selTool=selStep&&allTools().find(t=>t.server===selStep.server&&t.name===selStep.tool);
+  return header("Workflow Studio","Describe a workflow, pick servers, and test how reliably the agent completes it.",`<button class="btn" data-act="newwf">${ic("plus","sm")} New</button>`)+`<div class="page">
+  <div class="card" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><select data-act="pickwf" aria-label="Workflow" style="min-width:220px;font-weight:500">${wfs.map(x=>`<option value="${esc(x.id)}" ${x.id===w.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select>${badge(w.status==="Published"?"ok":"amb",w.status)}<span class="sm2">${steps.length} steps · ${(S.wfServers||w.servers).length} servers</span><span style="margin-left:auto" class="actions"><button class="btn" data-act="savewf">${ic("save","sm")} Save</button><button class="btn pri" data-act="runwf" ${run&&run.running?"disabled":""}>${run&&run.running?'<span class="spin"></span> Running':ic("play","sm")+" Run Test"}</button></span></div>
+  <div class="studio"><div style="display:grid;gap:16px;min-width:0">
+    <div class="card"><div class="field"><label for="wfp">Workflow prompt (natural language)</label><textarea id="wfp" rows="3">${esc(S.prompts[w.id]??w.prompt)}</textarea></div>
+    <div style="margin-top:14px"><div class="sm2" style="margin-bottom:8px">MCP servers available to the agent</div><div class="chips">${S.servers.map(s=>{const on=(S.wfServers||w.servers).includes(s.name);return`<button class="chip ${on?"on":""}" data-act="srvchip" data-s="${esc(s.name)}" aria-pressed="${on}">${on?ic("check","sm"):""}${esc(s.name)}</button>`}).join("")}</div></div></div>
+    <div class="canvas" aria-label="Workflow canvas">${steps.length?`<div class="flow">${html}</div>`:`<div class="empty"><div class="ico">${ic("flow")}</div><div><b>No steps yet</b></div><div>Run a test and FlowProof will draw the tool calls the agent actually made.</div></div>`}</div>
+    ${run&&run.final?reportCard(run):""}
+  </div>
+  <div class="card" style="position:sticky;top:16px"><h3>${selStep?"Step configuration":"Configuration"}</h3>${selStep?`<div style="display:grid;gap:14px;margin-top:14px">
+    <div><div class="sm2">Tool</div><div class="mono">${esc(selStep.tool)}</div></div><div><div class="sm2">Server</div>${esc(selStep.server)} MCP</div>
+    ${selTool?`<div><div class="sm2">Description</div><div class="mut">${esc(selTool.description)}</div></div>`:""}
+    <div><div class="sm2" style="margin-bottom:6px">Arguments used</div><pre class="json" style="max-height:140px">${jsonView(selStep.args||{})}</pre></div>
+    <label class="chip" style="justify-content:space-between"><span>Require approval</span><input type="checkbox" ${selStep.write?"checked disabled":""} aria-label="Require approval"></label>
+    <div class="field"><label for="to">Timeout (seconds)</label><input id="to" type="number" value="30"></div><div class="field"><label for="rt">Retries</label><select id="rt"><option>0</option><option selected>1</option><option>2</option></select></div>
+    <div class="sm2">Timeout and retry apply to this editor only; the runner uses its own defaults.</div></div>`:`<div class="empty" style="padding:30px 10px"><div class="ico">${ic("gear")}</div><div>Select a step on the canvas to configure it.</div></div>`}</div></div></div>`}
+function reportCard(run){const f=run.final;const v=f.verdict;
+  return`<div class="card report"><div class="card-h" style="margin:0"><div><h3>Test report</h3><div class="sub">${f.error?"Run failed":v?"Graded against ground truth":"Free-form workflow: no expected result defined, so this run is not graded."}</div></div>${f.error?badge("err","Error"):v?badge(f.passed?"ok":"err",f.passed?"Passed":"Failed"):badge("mu","Ungraded")}</div>
+  ${f.error?`<div class="err">${esc(f.error)}</div>`:""}
+  ${v?["answer","trajectory","safety"].filter(k=>v[k]).map(k=>`<div class="vrow"><span class="${v[k].ok?"ok":"err"}">${ic(v[k].ok?"check":"x","sm")}</span><b>${{answer:"Answer",trajectory:"Tools used",safety:"Safety"}[k]}</b><span class="mut">${esc(v[k].detail)}</span></div>`).join(""):""}
+  <div><div class="sm2" style="margin-bottom:6px">Agent answer</div><div style="white-space:pre-wrap;max-width:76ch">${md(f.answer||"(no answer)")}</div></div>
+  ${f.rid?`<a class="lnk" href="#/runs/${encodeURIComponent(f.rid)}">Open full execution trace</a>`:""}</div>`}
+
+async function runWorkflow(){
+  const w=wfList().find(x=>x.id===S.wf); const prompt=($("#wfp")||{}).value||w.prompt; S.prompts[w.id]=prompt; save();
+  const before=plannedSteps(w).length;
+  S.wfRun={id:w.id,running:true,started:true,status:{},final:null}; if(before)S.wfRun.status[0]="run"; render();
   try{
-    ROWS=await j("/api/scoreboard");
-    headline(ROWS);
-    $("#scList").innerHTML=ROWS.map(ledgerRow).join("");
-  }catch(e){$("#headline").textContent="Couldn't load the record.";$("#scList").innerHTML=fail(e,"Scoreboard")}
-}
-$("#scList").addEventListener("click",e=>{const b=e.target.closest("[data-run]");if(b)runSc(b.dataset.run,b)});
+    const sc=S.scen.find(s=>s.id===w.id);
+    const r=sc&&prompt===sc.question?await j(`/api/run/${w.id}`,{method:"POST"}):await j(`/api/ask?question=${encodeURIComponent(prompt)}`,{method:"POST"});
+    const real={id:`live-${now()}-${w.id}`,scenario:w.id,at:now(),passed:r.verdict?!!r.verdict.passed:!r.error,verdict:r.verdict||{},trace:r.trace||[],answer:r.answer||"",error:r.error||"",servers:[...new Set((r.trace||[]).filter(t=>t.server!=="?").map(t=>t.server))],ms:(r.trace||[]).reduce((a,t)=>a+(t.ms||0),0)||null};
+    S.runs.unshift(real); const ns=plannedSteps(w);S.wfRun.status={};
+    for(let i=0;i<ns.length;i++){S.wfRun.status[i]="run";render();await new Promise(r=>setTimeout(r,380));S.wfRun.status[i]=ns[i].held?"hold":ns[i].ok===false?"err":"ok"}
+    S.wfRun.running=false;S.wfRun.final={passed:real.passed,verdict:r.verdict,answer:r.answer,error:r.error,rid:real.id};
+    toast(r.error?"Run finished with an error":real.passed?`${w.name} passed`:`${w.name} failed`,real.passed&&!r.error?"ok":"err");
+  }catch(e){S.wfRun.running=false;S.wfRun.final={error:e.message,passed:false};toast("Run failed: "+e.message,"err")}
+  render()}
 
-async function runSc(id,btn){
-  const art=$("#sc-"+id), out=art.querySelector(".out"); btn.disabled=true; btn.textContent="Running…";
-  out.innerHTML='<div class="progress" role="status" aria-label="Agent running"></div>';
-  try{
-    const r=await j(`/api/run/${id}`,{method:"POST"}), v=r.verdict, idx=ROWS.findIndex(x=>x.id===id);
-    const one={id,question:ROWS[idx].question,writes:ROWS[idx].writes,run:{passed:v.passed?1:0,runs:1,at:Math.floor(Date.now()/1000),checks:{answer:v.answer&&v.answer.ok?1:0,trajectory:v.trajectory.ok?1:0,safety:v.safety.ok?1:0}}};
-    ROWS[idx]=one; art.outerHTML=ledgerRow(one,idx); headline(ROWS);
-    const fresh=$("#sc-"+id);
-    fresh.querySelector(".out").innerHTML=`<div class="detail">
-      <div class="checks">${["answer","trajectory","safety"].filter(k=>v[k]).map(k=>`<div><span class="${v[k].ok?"ok":"no"}">${v[k].ok?"Pass":"Fail"}</span><span>${{answer:"Answer",trajectory:"Tools used",safety:"Safety"}[k]}</span><span class="fine">${esc(v[k].detail)}</span></div>`).join("")}</div>
-      <div><h3>Tool calls</h3><table class="stack"><thead><tr><th>Call</th><th>Server</th><th></th></tr></thead><tbody>${r.trace.map(t=>`<tr><td><code>${esc(t.tool.split("__")[1]||t.tool)}</code> <span class="fine mono">${esc(JSON.stringify(t.args))}</span></td><td class="num">${esc(t.server)}</td><td class="num">${t.held?'<span class="held">Held</span>':t.is_write?'<span class="wr">Write</span>':""}</td></tr>`).join("")||'<tr><td colspan="3" class="fine">The agent called no tools.</td></tr>'}</tbody></table></div>
-      <div><h3>Agent's answer</h3><p class="answer">${esc(r.answer||"(no answer)")}</p></div></div>`;
-  }catch(e){out.innerHTML=fail(e,"Run failed");btn.disabled=false;btn.textContent="Run again"}
-}
+function filteredRuns(){const f=S.rf;return S.runs.filter(r=>(!f.q||(r.scenario+r.id).toLowerCase().includes(f.q.toLowerCase()))&&(!f.status||(f.status==="passed")===r.passed)&&inRange(r.at,f.range))}
+function runsTable(){const rs=filteredRuns();if(!rs.length)return`<div class="empty"><div class="ico">${ic("flask")}</div><div><b>No test runs match</b></div><button class="btn sm" data-act="clearr">Clear filters</button></div>`;
+  return`<div class="scroll"><table class="tbl"><thead><tr><th>Test ID</th><th>Workflow</th><th>Servers</th><th>Status</th><th>Duration</th><th>Timestamp</th><th></th></tr></thead><tbody>${rs.slice(0,60).map(r=>`<tr class="click" data-nav="#/runs/${encodeURIComponent(r.id)}"><td class="mono">${esc(r.id.length>26?r.id.slice(0,24)+"…":r.id)}</td><td class="name">${esc(r.scenario)}</td><td>${r.servers.map(s=>`<span class="badge mu" style="margin-right:4px">${esc(s)}</span>`).join("")||'<span class="mut">-</span>'}</td><td>${badge(r.passed?"ok":"err",r.passed?"Passed":"Failed")}</td><td class="mono">${fmtMs(r.ms)}</td><td class="mut">${when(r.at)}</td><td><span class="lnk">View Trace</span></td></tr>`).join("")}</tbody></table></div>`}
+function vRuns(){const rs=S.runs.filter(r=>inRange(r.at,S.rf.range)),p=rs.filter(r=>r.passed).length,ms=rs.map(r=>r.ms).filter(Boolean),avg=ms.length?Math.round(ms.reduce((a,b)=>a+b,0)/ms.length):null;
+  const k=(l,v,c="")=>`<div class="card"><div class="mut">${l}</div><div style="font:600 24px/1.1 var(--sans);margin-top:10px" class="${c}">${v}</div></div>`;
+  return header("Test Runs","Every agent run, graded against ground truth.",`<button class="btn pri" data-act="goto" data-to="#/studio">${ic("play","sm")} Run a workflow</button>`)+`<div class="page"><div class="grid g4">${k("Total test runs",rs.length)}${k("Passed",p,"ok")}${k("Failed",rs.length-p,rs.length-p?"err":"")}${k("Average execution time",fmtMs(avg))}</div>
+  <div class="card"><div class="filters" style="margin-bottom:14px"><div class="search">${ic("search","sm")}<input id="rq" placeholder="Search by workflow or test id" value="${esc(S.rf.q)}" aria-label="Search runs"></div>
+  <select data-rf="status" aria-label="Status"><option value="">All statuses</option><option value="passed" ${S.rf.status==="passed"?"selected":""}>Passed</option><option value="failed" ${S.rf.status==="failed"?"selected":""}>Failed</option></select>
+  <select data-rf="range" aria-label="Date">${[["all","All time"],["24h","Last 24 hours"],["7d","Last 7 days"],["30d","Last 30 days"]].map(([v,l])=>`<option value="${v}" ${S.rf.range===v?"selected":""}>${l}</option>`).join("")}</select></div><div id="runsTable">${runsTable()}</div></div></div>`}
 
-/* ---------- Scan ---------- */
-async function doScan(){
-  const o=$("#scanOut"), b=$("#scanBtn"); b.disabled=true; o.innerHTML='<div class="progress" role="status" aria-label="Scanning"></div>';
-  try{
-    const r=await j(`/api/scan?base=${encodeURIComponent($("#base").value)}&workflow=${encodeURIComponent($("#wf").value)}`);
-    const rec=r.endpoints.filter(e=>e.relevance).length;
-    o.innerHTML=`<h3 style="font-size:1.7rem;margin-bottom:6px">${esc(r.title)} is <em style="color:var(--rust)">${r.overall}/100</em> agent-ready.</h3>
-      <p class="fine" style="margin:0 0 22px">${rec} of ${r.endpoints.length} endpoints are relevant to this workflow.</p>
-      <div class="ledger"><table class="stack"><thead><tr><th style="padding-top:12px">Endpoint</th><th>Score</th><th>To improve</th><th>Expose?</th></tr></thead><tbody>${r.endpoints.map(e=>{
-        const col=e.score>=80?"var(--olive)":e.score>=60?"var(--amber)":"var(--rust)";
-        return `<tr><td><code>${esc(e.route)}</code> ${e.write?'<span class="wr fine">write</span>':""}</td>
-        <td><div class="meter"><i><b style="width:${e.score}%;background:${col}"></b></i><span class="mono">${e.score}</span></div></td>
-        <td class="fine">${e.missing.length?e.missing.map(esc).join(", "):"Nothing to fix"}</td>
-        <td>${e.relevance?`<span class="yes">Yes</span> <span class="fine">${e.why.map(esc).join(", ")}</span>`:'<span class="no2">No</span>'}</td></tr>`}).join("")}</tbody></table></div>
-      <div class="slip"><h3>Build command</h3><pre id="cmd">${esc(r.command||"No relevant endpoints found for this workflow.")}</pre>${r.command?'<button class="btn" id="copyBtn">Copy</button>':""}</div>`;
-    const c=$("#copyBtn"); if(c)c.onclick=async()=>{try{await navigator.clipboard.writeText(r.command);c.textContent="Copied"}catch{c.textContent="Select and copy"}setTimeout(()=>c.textContent="Copy",1600)};
-  }catch(e){o.innerHTML=fail(e,"Scan failed")}
-  b.disabled=false;
-}
-$("#scanBtn").onclick=doScan;
+function vTrace(id){const r=S.runs.find(x=>x.id===id);
+  if(!r)return header("Execution trace","")+`<div class="page"><div class="card"><div class="empty"><div class="ico">${ic("alert")}</div><div><b>Run not found</b></div><a class="lnk" href="#/runs">Back to test runs</a></div></div></div>`;
+  if(S.trace.id!==id)S.trace={id,step:0};
+  const steps=[{kind:"start"},...r.trace.map((t,i)=>({kind:"call",t,i})),{kind:"end"}], si=Math.min(S.trace.step,steps.length-1), cur=steps[si];
+  const rail=(s,i)=>{const last=i===steps.length-1;const k=s.kind==="call"?stOf(s.t):s.kind==="end"?(r.passed?"ok":"err"):"ok";const ico=s.kind==="start"?"play":s.kind==="end"?(r.passed?"check":"x"):k==="hold"?"hold":k==="ok"?"check":"x";
+    const title=s.kind==="start"?"Agent Started":s.kind==="end"?"Response Validation":baseName(s.t.tool);
+    const sub=s.kind==="start"?esc(r.scenario):s.kind==="end"?(r.passed?"All expected conditions passed.":"One or more conditions failed."):`${esc(s.t.server)} MCP · ${s.t.ms!=null?fmtMs(s.t.ms)+" · ":""}${k==="ok"?"Success":k==="hold"?"Held for approval":"Error"}`;
+    return`<button class="step ${i===si?"sel":""}" data-act="step" data-i="${i}"><div class="rail"><b class="${k}">${ic(ico,"sm")}</b>${last?"":"<u></u>"}</div><div class="sb"><div class="${s.kind==="call"?"mono":""}" style="font-weight:500">${esc(title)}</div><div class="sm2">${sub}</div></div></button>`};
+  let det="";
+  if(cur.kind==="call"){const t=cur.t,k=stOf(t);det=`<div class="card" style="display:grid;gap:16px"><div class="card-h" style="margin:0"><div><h3 class="mono">${esc(baseName(t.tool))}</h3><div class="sub">Step ${si} of ${r.trace.length}</div></div>${badge(k==="ok"?"ok":k==="hold"?"amb":"err",k==="ok"?"Success":k==="hold"?"Held":"Error")}</div>
+    <dl class="kv"><dt>Server</dt><dd>${esc(t.server)} MCP</dd><dt>Latency</dt><dd class="mono">${fmtMs(t.ms)}</dd><dt>Timestamp</dt><dd>${when(t.at||r.at)}</dd><dt>Type</dt><dd>${t.is_write?"Write":"Read"}</dd></dl>
+    ${term("arguments.json",t.args)}${term(k==="err"?"error":"response.json",t.result)}${t.held?`<div class="amb">This write was held by the approval gate and never executed.</div>`:""}</div>`}
+  else if(cur.kind==="start")det=`<div class="card" style="display:grid;gap:14px"><h3>Agent started</h3><div><div class="sm2">Task</div><div>${esc((S.scen.find(s=>s.id===r.scenario)||{}).question||r.scenario)}</div></div><dl class="kv"><dt>Servers</dt><dd>${esc(r.servers.join(", ")||"-")}</dd><dt>Started</dt><dd>${when(r.at)}</dd><dt>Tool calls</dt><dd>${r.trace.length}</dd></dl></div>`;
+  else{const v=r.verdict||{};det=`<div class="card" style="display:grid;gap:14px"><div class="card-h" style="margin:0"><h3>Response validation</h3>${badge(r.passed?"ok":"err",r.passed?"Passed":"Failed")}</div>${["answer","trajectory","safety"].filter(k=>v[k]).map(k=>`<div class="vrow"><span class="${v[k].ok?"ok":"err"}">${ic(v[k].ok?"check":"x","sm")}</span><b>${{answer:"Answer",trajectory:"Tools used",safety:"Safety"}[k]}</b><span class="mut">${esc(v[k].detail)}</span></div>`).join("")||'<div class="mut">This free-form run has no expectations to validate.</div>'}<div><div class="sm2" style="margin-bottom:6px">Agent answer</div><div style="white-space:pre-wrap">${md(r.answer||"(no answer)")}</div></div>${r.error?`<div class="err">${esc(r.error)}</div>`:""}</div>`}
+  return header(`<div class="crumb"><a href="#/runs">Test Runs</a>${ic("chev","sm")}<span style="color:var(--tx)">${esc(r.scenario)}</span></div>`,`${esc(r.id)} · ${when(r.at)}`,`${badge(r.passed?"ok":"err",r.passed?"Passed":"Failed")}<button class="btn" data-act="goto" data-to="#/studio" data-wf="${esc(r.scenario)}">${ic("flow","sm")} Open in Studio</button>`)+`<div class="page"><div class="trace"><div class="card"><h3 style="margin-bottom:16px">Execution timeline</h3><div class="tl">${steps.map(rail).join("")}</div></div><div style="position:sticky;top:16px">${det}</div></div></div>`}
 
-/* ---------- Change ---------- */
-async function snap(){
-  try{await j(`/api/snapshot/${encodeURIComponent($("#lbl").value)}`,{method:"POST"});$("#diffOut").innerHTML=`<div class="clean">${'<span class="seal pass" style="--r:-3deg"><i>'+CHECK+'</i></span>'} Snapshot &ldquo;${esc($("#lbl").value)}&rdquo; saved.</div>`}
-  catch(e){$("#diffOut").innerHTML=fail(e,"Snapshot failed")}
-}
-async function doDiff(){
-  const o=$("#diffOut"); o.innerHTML='<div class="progress" role="status" aria-label="Diffing"></div>';
-  try{
-    const d=await j(`/api/diff/${encodeURIComponent($("#lbl").value)}`);
-    const R=(g,cls,label,a)=>`<div class="diffrow"><span class="g ${a.length?cls:"nil"}">${g}</span><span class="l">${label}</span><div class="chips">${a.length?a.map(x=>`<code>${esc(x)}</code>`).join(""):'<span class="fine">None</span>'}</div></div>`;
-    const lint=Object.entries(d.lint);
-    o.innerHTML=`<div class="ledger" style="border-top-width:2px">${R("+","add","Added",d.added)}${R("&minus;","rem","Removed",d.removed)}${R("~","chg","Schema changed",d.changed)}${R("&asymp;","nil","Reworded only",d.reworded)}${R("&rarr;","wr","Read became write",d.became_write)}${R("&crarr;","chg","Scenarios to re-run",d.affected)}</div>
-    <div class="gap-top"><h3>Contract lint</h3><p class="fine" style="margin:0 0 6px">Tools whose description promises parameters the schema hides. An agent can't pass what it can't see.</p>
-    <div class="ledger">${lint.length?lint.map(([k,m])=>`<div class="finding"><code>${esc(k)}</code><span class="m">${m.map(esc).join(", ")}</span></div>`).join(""):`<div class="clean"><span class="seal pass" style="--r:-3deg"><i>${CHECK}</i></span>Every tool schema matches its description.</div>`}</div></div>`;
-  }catch(e){o.innerHTML=fail(e,"Diff failed (does that snapshot exist?)")}
-}
-$("#snapBtn").onclick=snap; $("#diffBtn").onclick=doDiff;
+function vAnalytics(){const a=S.an,b=batches(a.range,a.wf),cs=callStats(a.range,a.wf,a.server),rs=S.runs.filter(r=>inRange(r.at,a.range)&&(!a.wf||r.scenario===a.wf));
+  const usage=Object.entries(cs).sort((x,y)=>y[1].n-x[1].n).slice(0,8),maxU=usage[0]?usage[0][1].n:1;
+  const lat=Object.entries(cs).filter(([k,v])=>v.ms.length).map(([k,v])=>({l:k,v:Math.round(v.ms.reduce((x,y)=>x+y,0)/v.ms.length)})).sort((x,y)=>y.v-x.v).slice(0,8),maxL=lat[0]?lat[0].v:1;
+  const fails={answer:0,trajectory:0,safety:0};rs.forEach(r=>["answer","trajectory","safety"].forEach(k=>{if(r.verdict&&r.verdict[k]&&r.verdict[k].ok===false)fails[k]++}));const ft=fails.answer+fails.trajectory+fails.safety;
+  const sr=S.servers.filter(s=>!a.server||s.name===a.server).map(s=>({s:s.name,...srvStats(s.name)}));
+  const seg=[["all","All time"],["24h","24 hours"],["7d","7 days"],["30d","30 days"]].map(([v,l])=>`<button class="${a.range===v?"on":""}" data-an="range" data-v="${v}">${l}</button>`).join("");
+  return header("Analytics","Reliability and performance measured from real agent runs.",`<div class="seg">${seg}</div>`)+`<div class="page">
+  <div class="filters"><select data-anf="wf" aria-label="Workflow"><option value="">All workflows</option>${S.scen.map(s=>`<option ${a.wf===s.id?"selected":""}>${esc(s.id)}</option>`).join("")}</select><select data-anf="server" aria-label="Server"><option value="">All servers</option>${S.servers.map(s=>`<option ${a.server===s.name?"selected":""}>${esc(s.name)}</option>`).join("")}</select><span class="sm2">${rs.length} runs · ${Object.values(cs).reduce((x,y)=>x+y.n,0)} tool calls</span></div>
+  <div class="card"><div class="card-h"><div><h3>Workflow success rate</h3><div class="sub">Share of runs passing, per test batch</div></div></div>${lineChart("c-an",b.map(x=>when(x.at)),[{n:"Success rate",c:"#a3c66b",v:b.map(x=>pct(x.p,x.p+x.f))}],{max:100,fmt:v=>v+"%"})}</div>
+  <div class="grid g2"><div class="card"><div class="card-h"><div><h3>Execution latency</h3><div class="sub">Average per tool call</div></div></div>${lat.length?bars(lat.map(x=>({l:x.l,v:x.v,p:100*x.v/maxL,c:"var(--amb)"})),"var(--amb)",fmtMs):`<div class="empty"><div class="ico">${ic("clock")}</div><div><b>No latency recorded yet</b></div><div>Latency is captured on new runs. Run a workflow in Studio to populate this.</div></div>`}</div>
+  <div class="card"><div class="card-h"><div><h3>Tool usage frequency</h3><div class="sub">Calls per tool</div></div></div>${bars(usage.map(([k,v])=>({l:k,v:v.n,p:100*v.n/maxU})))}</div>
+  <div class="card"><div class="card-h"><div><h3>Failure distribution</h3><div class="sub">Which check failed, across runs</div></div></div>${ft?bars([["answer","Wrong answer"],["trajectory","Wrong tools"],["safety","Safety"]].map(([k,l])=>({l,v:fails[k],p:100*fails[k]/ft,c:"var(--err)"}))):`<div class="empty"><div class="ico">${ic("check")}</div><div><b>No failures in this range</b></div></div>`}</div>
+  <div class="card"><div class="card-h"><div><h3>MCP server reliability</h3><div class="sub">Successful tool calls per server</div></div></div>${bars(sr.filter(x=>x.rate!=null).map(x=>({l:x.s,v:x.rate,p:x.rate,c:x.rate>=95?"var(--ok)":"var(--amb)"})),"var(--ok)",v=>v+"%")}</div></div></div>`}
 
-loadBoard();
+function cmpRows(){const d=S.diff;if(!d)return[];const rows=[];
+  allTools().forEach(t=>{const st=d.added.includes(t.id)?"added":d.changed.includes(t.id)?"changed":d.reworded.includes(t.id)?"reworded":"same";rows.push({t,st})});
+  d.removed.forEach(id=>rows.push({t:{id,name:baseName(id),server:id.split("__")[0],method:"-",endpoint:"",write:false},st:"removed"}));return rows}
+function vChanges(){const d=S.diff,rows=cmpRows();
+  const lab={added:["ok","Added"],changed:["amb","Schema modified"],reworded:["mu","Reworded"],removed:["err","Removed"],same:["mu","Unchanged"]};
+  const show=rows.filter(r=>S.cmp==="all"||r.st!=="same");
+  const breaking=d?d.removed.length+d.became_write.length:0;
+  return header("Change Detection","Compare the tool contract before and after a rebuild.",`<select data-act="snap" aria-label="Previous snapshot">${(S.cfg.snapshots||[]).map(x=>`<option ${x===S.snap?"selected":""}>${esc(x)}</option>`).join("")}</select><button class="btn pri" data-act="regress">${ic("play","sm")} Run Regression Tests</button>`)+(!d?`<div class="page">${skeleton()}</div>`:`<div class="page">
+  <div class="grid g-main"><div class="card"><div class="card-h"><div><h3>Comparison</h3><div class="sub">Previous: <span class="mono">${esc(S.snap)}</span> → Current: <span class="mono">live servers</span></div></div><div class="seg"><button class="${S.cmp==="all"?"on":""}" data-cmp="all">All tools</button><button class="${S.cmp==="changes"?"on":""}" data-cmp="changes">Changes only</button><button class="${S.cmp==="lint"?"on":""}" data-cmp="lint">Lint</button></div></div>
+  ${S.cmp==="lint"?(Object.keys(d.lint).length?`<table class="tbl"><thead><tr><th>Tool</th><th>Finding</th></tr></thead><tbody>${Object.entries(d.lint).map(([k,m])=>`<tr><td class="mono">${esc(k)}</td><td class="amb">${m.map(esc).join(", ")}</td></tr>`).join("")}</tbody></table><div class="sm2" style="margin-top:12px">The description promises parameters that the tool's input schema does not declare, so an agent cannot pass them.</div>`:`<div class="empty"><div class="ico">${ic("check")}</div><div><b>Every tool schema matches its description</b></div></div>`):
+  show.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Method</th><th>Endpoint</th><th>Tool</th><th>Change</th></tr></thead><tbody>${show.map(({t,st})=>`<tr class="diffrow ${st}"><td><span class="method ${t.method}">${t.method}</span></td><td class="mono">${esc(t.endpoint||"-")}</td><td class="mono mut">${esc(t.server+" · "+t.name)}</td><td>${badge(lab[st][0],lab[st][1])}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty"><div class="ico">${ic("check")}</div><div><b>No changes since ${esc(S.snap)}</b></div><div>Add or change an endpoint, rebuild with synapse build --discover, then refresh.</div></div>`}</div>
+  <div class="card"><h3 style="margin-bottom:6px">Workflow impact analysis</h3><div class="sub" style="margin-bottom:12px">What this rebuild means for your tests</div>
+    <div class="stat-line"><span>Affected workflows</span><b>${d.affected.length}</b></div>${d.affected.length?`<div class="chips" style="padding:10px 0">${d.affected.map(a=>`<span class="badge amb">${esc(a)}</span>`).join("")}</div>`:""}
+    <div class="stat-line"><span>Tests requiring reruns</span><b>${d.affected.length}</b></div>
+    <div class="stat-line"><span>Permission changes</span><b class="${d.became_write.length?"err":""}">${d.became_write.length}</b></div>
+    <div class="stat-line"><span>Breaking changes</span><b class="${breaking?"err":""}">${breaking}</b></div>
+    <div class="stat-line"><span>Reworded only (no rerun)</span><b>${d.reworded.length}</b></div></div></div></div>`)}
+
+function vSettings(){const c=S.cfg;
+  return header("Settings","Where FlowProof reads its configuration.","")+`<div class="page"><div class="grid g2">
+  <div class="card"><h3 style="margin-bottom:14px">Agent model</h3><dl class="kv"><dt>Model</dt><dd class="mono">${esc(c.model)}</dd><dt>Fallbacks</dt><dd class="mono">${esc((c.fallbacks||[]).join(", ")||"-")}</dd><dt>Provider host</dt><dd class="mono">${esc(c.llm_host)}</dd></dl><div class="sm2" style="margin-top:12px">Set FLOWPROOF_MODEL and FLOWPROOF_FALLBACKS in .env. API keys are never shown here.</div></div>
+  <div class="card"><h3 style="margin-bottom:14px">MCP servers</h3><dl class="kv"><dt>Config file</dt><dd class="mono">${esc(c.servers_file)}</dd><dt>Synapse API key</dt><dd>${c.has_synapse_key?badge("ok","Configured"):badge("amb","Not set")}</dd><dt>Servers</dt><dd>${S.servers.length}</dd></dl></div>
+  <div class="card"><h3 style="margin-bottom:6px">Contract snapshots</h3><div class="sub" style="margin-bottom:14px">Save the current tool contract so a later rebuild can be diffed against it.</div><div style="display:flex;gap:10px"><input id="snapname" value="baseline" aria-label="Snapshot label"><button class="btn pri" data-act="savesnap">${ic("save","sm")} Save snapshot</button></div><div class="chips" style="margin-top:14px">${(c.snapshots||[]).map(x=>`<span class="badge mu">${esc(x)}</span>`).join("")}</div></div>
+  <div class="card"><h3 style="margin-bottom:14px">Safety</h3><div class="stat-line"><span>Write tools require approval</span>${badge("ok","Always on")}</div><div class="stat-line"><span>Approval is enforced</span><span class="mut">in the runner, not the prompt</span></div><div class="stat-line"><span>Drafts saved in this browser</span><b>${S.drafts.length}</b></div></div></div></div>`}
+
+function modal(html){$("#layer").innerHTML=`<div class="scrim" data-act="closed"></div>${html}`;const f=$("#layer input,#layer textarea");f&&f.focus()}
+function closeLayer(){$("#layer").innerHTML="";S.tool=""}
+function newWfModal(){modal(`<div class="modal" role="dialog" aria-label="New workflow"><h2>New workflow</h2><div class="field"><label for="nwn">Name</label><input id="nwn" placeholder="e.g. expiring-warranties"></div><div class="field"><label for="nwp">What should the agent do?</label><textarea id="nwp" rows="3" placeholder="Find unresolved high-priority support tickets for critical assets and check their warranty status."></textarea></div><div><div class="sm2" style="margin-bottom:8px">MCP servers</div><div class="chips">${S.servers.map(s=>`<label class="chip on"><input type="checkbox" checked value="${esc(s.name)}" class="nws"> ${esc(s.name)}</label>`).join("")}</div></div><div style="display:flex;justify-content:flex-end;gap:10px"><button class="btn" data-act="closed">Cancel</button><button class="btn pri" data-act="createwf">Create draft</button></div></div>`)}
+function connectModal(){const snip=`"my-server": {"command": "npx", "args": ["-y", "@2ndbrainlabs-ai/synapse-mcp"], "env": {"SYNAPSE_SERVER_ID": "<server id>", "SYNAPSE_API_KEY": "\${SYNAPSE_API_KEY}", "ENDPOINT_BASE_URL": "http://localhost:9000"}}`;
+  modal(`<div class="modal" role="dialog" aria-label="Connect server"><h2>Connect a new server</h2><p class="mut" style="margin:0">FlowProof reads servers from <span class="mono">${esc(S.cfg.servers_file||"servers.json")}</span>. Build a server with Synapse, add an entry, then refresh.</p><pre class="json" style="white-space:pre-wrap;word-break:break-all">synapse build --discover --auto --all-endpoints --smart-names \\\n  --base-url http://localhost:9000 --server-name my-server</pre><pre class="json" style="white-space:pre-wrap;word-break:break-all" id="snip">${esc(snip)}</pre><div style="display:flex;justify-content:flex-end;gap:10px"><button class="btn" data-act="copysnip">${ic("copy","sm")} Copy entry</button><button class="btn pri" data-act="closed">Done</button></div></div>`)}
+
+document.addEventListener("click",async e=>{
+  const nav=e.target.closest("[data-nav]");if(nav){location.hash=nav.dataset.nav;return}
+  const cmp=e.target.closest("[data-cmp]");if(cmp){S.cmp=cmp.dataset.cmp;render();return}
+  const an=e.target.closest("[data-an]");if(an){S.an[an.dataset.an]=an.dataset.v;render();return}
+  if(S.notifOpen&&!e.target.closest(".rel")){S.notifOpen=false;render()}
+  const a=e.target.closest("[data-act]");if(!a)return;const act=a.dataset.act;
+  if(["range","pickwf","snap"].includes(act))return;
+  switch(act){
+    case"menu":$("#side").classList.toggle("open");break;
+    case"notif":S.notifOpen=!S.notifOpen;render();break;
+    case"closed":closeLayer();render();break;
+    case"newwf":newWfModal();break;
+    case"createwf":{const n=$("#nwn").value.trim()||"untitled-workflow",p=$("#nwp").value.trim();if(!p){toast("Describe what the agent should do first","err");return}
+      const id="draft-"+n.toLowerCase().replace(/[^a-z0-9]+/g,"-");S.drafts.push({id,name:n,prompt:p,servers:$$(".nws:checked").map(x=>x.value)});save();S.wf=id;S.wfServers=null;closeLayer();location.hash="#/studio";toast(`Draft "${n}" created`);render();break}
+    case"connect":connectModal();break;
+    case"copysnip":try{await navigator.clipboard.writeText($("#snip").textContent);toast("Copied")}catch{toast("Select and copy manually","info")}break;
+    case"viewtools":S.tf={q:"",server:a.dataset.s,method:"",perm:"",status:""};location.hash="#/tools";break;
+    case"toggle":S.srvOpen[a.dataset.s]=!S.srvOpen[a.dataset.s];render();break;
+    case"health":{a.disabled=true;a.innerHTML='<span class="spin"></span> Checking';try{await load(true);const s=S.servers.find(x=>x.name===a.dataset.s);toast(`${s.name}: healthy · ${s.ping_ms}ms · ${s.tools.length} tools`)}catch(err){toast("Health check failed: "+err.message,"err")}render();break}
+    case"refresh":try{await load(true);toast("Connections refreshed")}catch(err){toast("Refresh failed: "+err.message,"err")}render();break;
+    case"disconnect":S.disc[a.dataset.s]=true;toast(`${a.dataset.s} disconnected for this session`,"info");render();break;
+    case"reconnect":delete S.disc[a.dataset.s];toast(`${a.dataset.s} reconnected`);render();break;
+    case"tool":S.tool=a.dataset.id;$("#layer").innerHTML=toolDrawer();$$("#toolsTable tr").forEach(r=>r.classList.toggle("sel",r.dataset.id===S.tool));break;
+    case"clearf":S.tf={q:"",server:"",method:"",perm:"",status:""};render();break;
+    case"clearr":S.rf={q:"",status:"",range:"all"};render();break;
+    case"goto":if(a.dataset.wf){S.wf=a.dataset.wf;S.wfServers=null;S.wfNodeSel=null}location.hash=a.dataset.to;break;
+    case"node":S.wfNodeSel=+a.dataset.i;render();break;
+    case"srvchip":{const w=wfList().find(x=>x.id===S.wf);const cur=S.wfServers||[...w.servers];const i=cur.indexOf(a.dataset.s);i>=0?cur.splice(i,1):cur.push(a.dataset.s);S.wfServers=cur;render();break}
+    case"savewf":{const p=$("#wfp").value;S.prompts[S.wf]=p;const d=S.drafts.find(x=>x.id===S.wf);if(d)d.prompt=p;save();toast("Workflow saved in this browser");break}
+    case"runwf":runWorkflow();break;
+    case"step":S.trace.step=+a.dataset.i;render();break;
+    case"savesnap":{const n=$("#snapname").value.trim();if(!n)return;try{await j(`/api/snapshot/${encodeURIComponent(n)}`,{method:"POST"});S.cfg=await j("/api/config");toast(`Snapshot "${n}" saved`);render()}catch(err){toast("Snapshot failed: "+err.message,"err")}break}
+    case"regress":{const aff=S.diff?S.diff.affected:[];if(!aff.length){toast("No scenarios are affected by this change. Nothing to rerun.","info");break}
+      a.disabled=true;a.innerHTML='<span class="spin"></span> Running';let ok=0;for(const id of aff){try{const r=await j(`/api/run/${id}`,{method:"POST"});const run={id:`live-${now()}-${id}`,scenario:id,at:now(),passed:!!r.verdict.passed,verdict:r.verdict,trace:r.trace,answer:r.answer,error:r.error||"",servers:[...new Set(r.trace.filter(t=>t.server!=="?").map(t=>t.server))],ms:r.trace.reduce((x,t)=>x+(t.ms||0),0)||null};S.runs.unshift(run);if(run.passed)ok++;toast(`${id}: ${run.passed?"passed":"failed"}`,run.passed?"ok":"err")}catch(err){toast(`${id}: ${err.message}`,"err")}}
+      toast(`Regression finished: ${ok}/${aff.length} passed`,ok===aff.length?"ok":"err");render();break}
+  }});
+document.addEventListener("change",async e=>{const t=e.target;
+  if(t.dataset.act==="range"){S.range=t.value;render()}
+  else if(t.dataset.act==="pickwf"){S.wf=t.value;S.wfNodeSel=null;S.wfServers=null;render()}
+  else if(t.dataset.act==="snap"){S.snap=t.value;S.diff=null;render();await loadDiff();render()}
+  else if(t.dataset.f){S.tf[t.dataset.f]=t.value;$("#toolsTable").innerHTML=toolsTable()}
+  else if(t.dataset.rf){S.rf[t.dataset.rf]=t.value;if(t.dataset.rf==="range")render();else $("#runsTable").innerHTML=runsTable()}
+  else if(t.dataset.anf){S.an[t.dataset.anf]=t.value;render()}});
+document.addEventListener("input",e=>{if(e.target.id==="tq"){S.tf.q=e.target.value;$("#toolsTable").innerHTML=toolsTable()}if(e.target.id==="rq"){S.rf.q=e.target.value;$("#runsTable").innerHTML=runsTable()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeLayer();S.notifOpen=false;render()}});
+window.addEventListener("hashchange",()=>{$("#side").classList.remove("open");window.scrollTo(0,0);render()});
+
+const VIEWS={overview:vOverview,servers:vServers,tools:vTools,studio:vStudio,runs:vRuns,trace:vTrace,analytics:vAnalytics,changes:vChanges,settings:vSettings};
+const TITLES={overview:"Overview",servers:"MCP Servers",tools:"Tool Registry",studio:"Workflow Studio",runs:"Test Runs",trace:"Execution Trace",analytics:"Analytics",changes:"Change Detection",settings:"Settings"};
+function render(){
+  renderNav();const r=route(),v=$("#view");
+  if(!S.loaded){v.innerHTML=header("&nbsp;","&nbsp;")+skeleton();return}
+  const st=window.scrollY;
+  v.innerHTML=(VIEWS[r.page]||vOverview)(r.id);
+  document.title=(TITLES[r.page]||"FlowProof")+" · FlowProof";
+  if(S.tool&&r.page==="tools")$("#layer").innerHTML=toolDrawer();
+  window.scrollTo(0,st)}
+async function loadDiff(){const labels=S.cfg.snapshots||[];const label=S.snap||(labels.includes("hosted_baseline")?"hosted_baseline":labels[0]);if(!label)return;S.snap=label;try{S.diff=await j(`/api/diff/${encodeURIComponent(label)}`);S.diff._at=now()}catch{S.diff=null}}
+async function load(soft){
+  const [servers,runs,scen,cfg,diff]=await Promise.all([j("/api/servers"+(soft?"?fresh=true":"")),j("/api/runs"),j("/api/scenarios"),j("/api/config"),j("/api/diff/"+encodeURIComponent(S.snap||"hosted_baseline")).catch(()=>null)]);
+  S.servers=servers;S.scen=scen;S.cfg=cfg;const live=soft?S.runs.filter(r=>r.id.startsWith("live-")):[];S.runs=[...live,...runs];
+  if(diff&&(!S.snap||S.diff===null)){S.snap=S.snap||"hosted_baseline";S.diff=diff;S.diff._at=now()}else await loadDiff();S.loaded=true}
+render();
+load().then(render).catch(e=>{S.loaded=false;$("#view").innerHTML=header("Can't reach the FlowProof API","")+`<div class="page"><div class="card"><div class="empty"><div class="ico">${ic("alert")}</div><div><b>${esc(e.message)}</b></div><div>Start it with: uv run uvicorn backend.api:app --port 8000</div></div></div></div>`});
 </script>
 </body>
 </html>
