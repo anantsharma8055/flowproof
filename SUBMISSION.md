@@ -23,6 +23,8 @@ FlowProof is the layer that proves the generated servers keep working after each
 - Rebuilds can rewrite the descriptions of untouched tools; FlowProof reports these as "reworded" rather than as contract changes.
 - Local Auto: tools have no parameters and route-only descriptions; `--discover` writes a second file instead of updating in place.
 
+- Adding path-based filter endpoints (`/tickets/status/{status}`, `/assets/criticality/{level}`) lifted critical-asset-tickets from 0/3 to 1/3 on hosted Synapse. The rest is model reasoning (it picked a wrong asset), so a stronger model is the next lever.
+
 ## Where it goes next
 Run in CI on every API change; add scenario packs per domain; compare models by pass rate; gate deploys on readiness score.
 

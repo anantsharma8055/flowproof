@@ -38,6 +38,11 @@ def list_assets(type: str | None = None, criticality: str | None = None):
     return [dict(r) for r in db().execute(q, a)]
 
 
+@app.get("/assets/criticality/{level}", summary="List assets with this criticality: low, medium, high or business_critical")
+def assets_by_criticality(level: str):
+    return list_assets(criticality=level)
+
+
 @app.get("/assets/{asset_id}", summary="Get one asset with owner, criticality and warranty expiry date")
 def get_asset(asset_id: int):
     r = db().execute("SELECT * FROM assets WHERE id=?", (asset_id,)).fetchone()

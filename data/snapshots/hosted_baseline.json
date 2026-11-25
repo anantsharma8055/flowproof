@@ -17,6 +17,12 @@
     "is_write": false,
     "description": "Retrieve tickets with optional filtering by status (including 'unresolved' for non-resolved tickets), severity, or asset_id. Returns matching ticket records."
   },
+  "helpdesk__list_tickets_by_status": {
+    "hash": "9bb7ff72fc43",
+    "shash": "ebcb6ac16a2f",
+    "is_write": false,
+    "description": "Retrieve all tickets matching a specific status value. Returns a filtered list of ticket records."
+  },
   "helpdesk__get_ticket": {
     "hash": "cb106c58f2c7",
     "shash": "0c0170b4a861",
@@ -35,16 +41,22 @@
     "is_write": false,
     "description": "Retrieve all assets from the database, optionally filtered by type and/or criticality level. Returns a list of asset records."
   },
-  "assets__get_asset": {
-    "hash": "44b5db7734d3",
+  "assets__get_assets_by_criticality": {
+    "hash": "dbe076a7913b",
+    "shash": "d90f9b9b4689",
+    "is_write": false,
+    "description": "Retrieve all assets matching a specific criticality level. Returns a filtered list of asset records."
+  },
+  "assets__get_asset_by_id": {
+    "hash": "0f7c020e7b1b",
     "shash": "edb666ab4370",
     "is_write": false,
-    "description": "Fetch a single asset by its ID. Returns the asset record or raises a 404 error if the asset does not exist."
+    "description": "Retrieve a single asset by its ID. Returns the asset record or raises a 404 error if not found."
   },
   "assets__create_replacement_request": {
-    "hash": "0c38680e8247",
+    "hash": "de44e59a5e66",
     "shash": "b91cb6c563e6",
     "is_write": true,
-    "description": "Create a new replacement request for an asset by providing the asset ID and a reason. Returns the newly created request ID."
+    "description": "Create a new replacement request for an asset by providing the asset ID and reason. Returns the newly created request ID."
   }
 }

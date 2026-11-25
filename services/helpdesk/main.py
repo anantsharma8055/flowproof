@@ -55,6 +55,11 @@ def list_tickets(status: str | None = None, severity: str | None = None, asset_i
     return [dict(r) for r in db().execute(q, a)]
 
 
+@app.get("/tickets/status/{status}", summary="List tickets with this status: open, in_progress, resolved, or unresolved (open and in_progress together)")
+def tickets_by_status(status: str):
+    return list_tickets(status=status)
+
+
 @app.get("/tickets/{ticket_id}", summary="Get one ticket by id")
 def get_ticket(ticket_id: int):
     r = db().execute("SELECT * FROM tickets WHERE id=?", (ticket_id,)).fetchone()
