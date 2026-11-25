@@ -4,6 +4,7 @@ from pathlib import Path
 import yaml
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from backend import contract
 from backend.agent import run_agent
 from backend.evaluator import evaluate
@@ -13,6 +14,16 @@ from backend.scanner import scan
 ROOT = Path(__file__).resolve().parents[1]
 app = FastAPI(title="FlowProof")
 scenarios = lambda: yaml.safe_load((ROOT / "scenarios" / "workflows.yaml").read_text())
+
+
+app.mount("/static", StaticFiles(directory=ROOT / "frontend"), name="static")
+
+
+@app.middleware("http")
+async def no_cache(request, call_next):
+    r = await call_next(request)
+    r.headers["Cache-Control"] = "no-cache"  # the dashboard changes while we iterate; always revalidate
+    return r
 
 
 @app.get("/")
