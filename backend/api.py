@@ -17,7 +17,7 @@ scenarios = lambda: yaml.safe_load((ROOT / "scenarios" / "workflows.yaml").read_
 
 @app.get("/")
 def index():
-    return FileResponse(ROOT / "frontend" / "index.html")
+    return FileResponse(ROOT / "frontend" / "index.html", headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/api/scan")
@@ -28,6 +28,27 @@ def api_scan(base: str, workflow: str = ""):
 @app.get("/api/scenarios")
 def api_scenarios():
     return scenarios()
+
+
+@app.get("/api/scoreboard")
+def api_scoreboard():
+    """Latest saved CLI result per scenario: pass count plus how many runs passed each of the three checks."""
+    latest = {}
+    for f in sorted((ROOT / "data" / "runs").glob("*.json")):
+        try:
+            for e in json.loads(f.read_text()):
+                latest[e["scenario"]] = {**e, "at": int(f.stem)}
+        except (ValueError, KeyError):
+            continue  # a half-written or foreign file must not break the dashboard
+    rows = []
+    for sc in scenarios():
+        e, run = latest.get(sc["id"]), None
+        if e:
+            res = e["results"]
+            run = {"passed": e["passed"], "runs": e["runs"], "at": e["at"],
+                   "checks": {k: sum(1 for r in res if r["verdict"].get(k, {}).get("ok")) for k in ("answer", "trajectory", "safety")}}
+        rows.append({"id": sc["id"], "question": sc["question"], "writes": sc.get("writes"), "run": run})
+    return rows
 
 
 @app.get("/api/snapshots")
