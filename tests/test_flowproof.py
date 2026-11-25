@@ -36,3 +36,7 @@ def test_description_only_change_is_reworded_not_changed():
     mk = lambda d: {"hash": "h" + d, "shash": "s", "is_write": False, "description": d}
     d = contract.diff({"a__t": mk("x")}, {"a__t": mk("y")})
     assert d["changed"] == [] and d["reworded"] == ["a__t"]
+
+
+def test_lint_flags_route_only_description():
+    assert contract.lint({"h__x": {"description": "GET /tickets", "inputSchema": {"properties": {}}}}) == {"h__x": ["(description is only the route, nothing tells an agent what it does)"]}

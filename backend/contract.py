@@ -48,6 +48,9 @@ def lint(tools: dict) -> dict:
     out = {}
     for k, t in tools.items():
         props = set(t["inputSchema"].get("properties", {}))
+        if re.fullmatch(r"(GET|POST|PUT|PATCH|DELETE) \S+", t["description"].strip()):
+            out[k] = ["(description is only the route, nothing tells an agent what it does)"]
+            continue
         said = {w for w in re.findall(r"\b[a-z]+_[a-z_]+\b", t["description"]) if w not in k and w not in {"in_progress", "business_critical"}}
         missing = sorted(said - props)
         if not props and re.search(r"\b(filter\w*|optional\w*|by providing|given)\b", t["description"], re.I):
