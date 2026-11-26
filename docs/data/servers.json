@@ -1,0 +1,233 @@
+[
+ {
+  "name": "helpdesk",
+  "url": "http://localhost:8001",
+  "ping_ms": 1,
+  "checked_at": 1795701007,
+  "tools": [
+   {
+    "id": "helpdesk__list_employees",
+    "name": "list_employees",
+    "description": "Retrieve all employees from the database. Returns a list of employee records with all fields.",
+    "schema": {
+     "$schema": "http://json-schema.org/draft-07/schema#",
+     "type": "object",
+     "properties": {}
+    },
+    "write": false,
+    "method": "GET",
+    "endpoint": "GET /employees"
+   },
+   {
+    "id": "helpdesk__get_employee",
+    "name": "get_employee",
+    "description": "Fetch a single employee by ID. Returns the employee record or raises a 404 error if not found.",
+    "schema": {
+     "type": "object",
+     "properties": {
+      "employee_id": {
+       "type": "string",
+       "description": "URL path parameter: employee_id"
+      }
+     },
+     "required": [
+      "employee_id"
+     ],
+     "additionalProperties": false,
+     "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "write": false,
+    "method": "GET",
+    "endpoint": "GET /employees/{employee_id}"
+   },
+   {
+    "id": "helpdesk__list_tickets",
+    "name": "list_tickets",
+    "description": "Retrieve tickets with optional filtering by status (including 'unresolved' for non-resolved tickets), severity, or asset_id. Returns matching ticket records.",
+    "schema": {
+     "$schema": "http://json-schema.org/draft-07/schema#",
+     "type": "object",
+     "properties": {}
+    },
+    "write": false,
+    "method": "GET",
+    "endpoint": "GET /tickets"
+   },
+   {
+    "id": "helpdesk__list_tickets_by_status",
+    "name": "list_tickets_by_status",
+    "description": "Retrieve all tickets matching a specific status value. Returns a filtered list of ticket records.",
+    "schema": {
+     "type": "object",
+     "properties": {
+      "status": {
+       "type": "string",
+       "description": "URL path parameter: status"
+      }
+     },
+     "required": [
+      "status"
+     ],
+     "additionalProperties": false,
+     "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "write": false,
+    "method": "GET",
+    "endpoint": "GET /tickets/status/{status}"
+   },
+   {
+    "id": "helpdesk__get_ticket",
+    "name": "get_ticket",
+    "description": "Fetch a single ticket by ID. Returns the ticket record or raises a 404 error if not found.",
+    "schema": {
+     "type": "object",
+     "properties": {
+      "ticket_id": {
+       "type": "string",
+       "description": "URL path parameter: ticket_id"
+      }
+     },
+     "required": [
+      "ticket_id"
+     ],
+     "additionalProperties": false,
+     "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "write": false,
+    "method": "GET",
+    "endpoint": "GET /tickets/{ticket_id}"
+   },
+   {
+    "id": "helpdesk__escalate_ticket",
+    "name": "escalate_ticket",
+    "description": "Mark a ticket as high severity and in-progress status. Requires a valid ticket ID and returns success confirmation or 404 if ticket not found.",
+    "schema": {
+     "type": "object",
+     "properties": {
+      "ticket_id": {
+       "type": "string",
+       "description": "URL path parameter: ticket_id"
+      }
+     },
+     "required": [
+      "ticket_id"
+     ],
+     "additionalProperties": false,
+     "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "write": true,
+    "method": "POST",
+    "endpoint": "POST /tickets/{ticket_id}/escalate"
+   }
+  ]
+ },
+ {
+  "name": "assets",
+  "url": "http://localhost:8002",
+  "ping_ms": 1,
+  "checked_at": 1795701007,
+  "tools": [
+   {
+    "id": "assets__list_assets",
+    "name": "list_assets",
+    "description": "Retrieve all assets from the database, optionally filtered by type and/or criticality level. Returns a list of asset records.",
+    "schema": {
+     "$schema": "http://json-schema.org/draft-07/schema#",
+     "type": "object",
+     "properties": {}
+    },
+    "write": false,
+    "method": "GET",
+    "endpoint": "GET /assets"
+   },
+   {
+    "id": "assets__get_assets_by_criticality",
+    "name": "get_assets_by_criticality",
+    "description": "Retrieve all assets matching a specific criticality level. Returns a filtered list of asset records.",
+    "schema": {
+     "type": "object",
+     "properties": {
+      "level": {
+       "type": "string",
+       "description": "URL path parameter: level"
+      }
+     },
+     "required": [
+      "level"
+     ],
+     "additionalProperties": false,
+     "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "write": false,
+    "method": "GET",
+    "endpoint": "GET /assets/criticality/{level}"
+   },
+   {
+    "id": "assets__get_asset_by_id",
+    "name": "get_asset_by_id",
+    "description": "Fetch a single asset record by its ID. Returns the asset details or raises a 404 error if not found.",
+    "schema": {
+     "type": "object",
+     "properties": {
+      "asset_id": {
+       "type": "string",
+       "description": "URL path parameter: asset_id"
+      }
+     },
+     "required": [
+      "asset_id"
+     ],
+     "additionalProperties": false,
+     "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "write": false,
+    "method": "GET",
+    "endpoint": "GET /assets/{asset_id}"
+   },
+   {
+    "id": "assets__create_replacement_request",
+    "name": "create_replacement_request",
+    "description": "Create a replacement request for an asset with a specified reason (defaults to 'Repeated faults'). Returns the request ID and confirmation.",
+    "schema": {
+     "type": "object",
+     "properties": {
+      "asset_id": {
+       "type": "string",
+       "description": "URL path parameter: asset_id"
+      }
+     },
+     "required": [
+      "asset_id"
+     ],
+     "additionalProperties": false,
+     "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "write": true,
+    "method": "POST",
+    "endpoint": "POST /assets/{asset_id}/replacement-request"
+   },
+   {
+    "id": "assets__get_asset_warranty_history",
+    "name": "get_asset_warranty_history",
+    "description": "Retrieve warranty information and claims history for an asset by ID, including purchase date, warranty expiry, and associated claims. Returns 404 if asset not found.",
+    "schema": {
+     "type": "object",
+     "properties": {
+      "asset_id": {
+       "type": "string",
+       "description": "URL path parameter: asset_id"
+      }
+     },
+     "required": [
+      "asset_id"
+     ],
+     "additionalProperties": false,
+     "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "write": false,
+    "method": "GET",
+    "endpoint": "GET /assets/{asset_id}/warranty-history"
+   }
+  ]
+ }
+]

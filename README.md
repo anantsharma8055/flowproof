@@ -23,6 +23,10 @@ Overview, MCP Servers, Tool Registry, Workflow Studio (edit a prompt, pick serve
 canvas and get a graded report), Test Runs, Execution Trace (step-by-step timeline with arguments and responses), Analytics, Change Detection
 (snapshot comparison, impact analysis, Run Regression Tests) and Settings.
 
+## Recorded demo
+`docs/` is a static, read-only copy of the dashboard frozen from a real live-update run (`uv run python scripts/export_static.py` regenerates it).
+Host it on GitHub Pages (Settings, Pages, `/docs`) or Vercel (root directory `docs`). Run Test is disabled there; clone the repo to run workflows.
+
 ## Run it
 ```bash
 uv sync && cp .env.example .env          # add an LLM key (Gemini or Groq) and SYNAPSE_API_KEY for hosted servers

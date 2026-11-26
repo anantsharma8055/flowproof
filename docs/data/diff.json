@@ -1,0 +1,37 @@
+{
+ "added": [
+  "assets__get_asset_warranty_history"
+ ],
+ "removed": [],
+ "changed": [],
+ "reworded": [
+  "assets__create_replacement_request",
+  "assets__get_asset_by_id"
+ ],
+ "became_write": [],
+ "affected": [
+  "warranty-claims"
+ ],
+ "lint": {
+  "helpdesk__list_tickets": [
+   "asset_id",
+   "(schema is empty)"
+  ],
+  "assets__list_assets": [
+   "(schema is empty)"
+  ]
+ },
+ "tools": {
+  "helpdesk__list_employees": false,
+  "helpdesk__get_employee": false,
+  "helpdesk__list_tickets": false,
+  "helpdesk__list_tickets_by_status": false,
+  "helpdesk__get_ticket": false,
+  "helpdesk__escalate_ticket": true,
+  "assets__list_assets": false,
+  "assets__get_assets_by_criticality": false,
+  "assets__get_asset_by_id": false,
+  "assets__create_replacement_request": true,
+  "assets__get_asset_warranty_history": false
+ }
+}

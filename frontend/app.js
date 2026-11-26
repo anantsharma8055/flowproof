@@ -30,7 +30,15 @@ const S={servers:[],runs:[],scen:[],cfg:{},diff:null,snap:"",loaded:false,
   drafts:[],prompts:{}};
 try{S.drafts=JSON.parse(localStorage.getItem("fp_drafts")||"[]");S.prompts=JSON.parse(localStorage.getItem("fp_prompts")||"{}")}catch{}
 const save=()=>{try{localStorage.setItem("fp_drafts",JSON.stringify(S.drafts));localStorage.setItem("fp_prompts",JSON.stringify(S.prompts))}catch{}};
-async function j(u,o){const r=await fetch(u,o);if(!r.ok)throw new Error(r.status+" "+r.statusText);return r.json()}
+/* Static mode (docs/): the same dashboard reading recorded JSON instead of the live API. */
+const STATIC=!!window.FP_STATIC, REC={"/api/servers":"servers","/api/runs":"runs","/api/scenarios":"scenarios","/api/config":"config"};
+async function j(u,o){
+  if(STATIC){
+    if(o&&o.method==="POST")throw new Error("This is a recorded demo. Clone the repo to run workflows live");
+    const k=u.split("?")[0],f=REC[k]||(k.startsWith("/api/diff/")?"diff":null);
+    if(!f)throw new Error("not recorded");
+    const r=await fetch("data/"+f+".json");if(!r.ok)throw new Error(r.status+" "+r.statusText);return r.json()}
+  const r=await fetch(u,o);if(!r.ok)throw new Error(r.status+" "+r.statusText);return r.json()}
 
 const now=()=>Math.floor(Date.now()/1000);
 function ago(t){const d=now()-t;if(d<60)return"just now";if(d<3600)return Math.floor(d/60)+"m ago";if(d<86400)return Math.floor(d/3600)+"h ago";return Math.floor(d/86400)+"d ago"}

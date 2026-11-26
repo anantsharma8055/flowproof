@@ -1,4 +1,7 @@
-# Demo script (about 5 minutes)
+# Demo script (about 5 minutes edited, 7 to 8 raw)
+
+**Measured waiting time:** agent runs take 40 to 65 s each, the Synapse rebuild about 30 s, and the diff plus rerun about 40 s, so roughly 3 minutes of
+waiting in a raw take. Trim the waits when editing the video, or narrate over them. Hold-and-explain works well during the agent runs.
 
 **Setup (before recording):** both services running on 8001 and 8002; dashboard started with
 `FLOWPROOF_SERVERS=servers.hosted.json uv run uvicorn backend.api:app --port 8000`; baseline saved with
